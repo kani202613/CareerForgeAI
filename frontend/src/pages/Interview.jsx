@@ -19,7 +19,7 @@ const Interview = () => {
     
     try {
       const response = await axios.post(
-        'http://localhost:5000/api/interview/chat',
+        'https://careerforgeai-ucd7.onrender.com/api/interview/chat',
         { role, history, newMessage, recruiterMode },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -40,7 +40,7 @@ const Interview = () => {
     setLoading(true);
     try {
       const response = await axios.post(
-        'http://localhost:5000/api/interview/end',
+        'https://careerforgeai-ucd7.onrender.com/api/interview/end',
         { role, history },
         { headers: { Authorization: `Bearer ${token}` } }
       );
