@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import useAuthStore from '../store/authStore';
 
@@ -9,6 +10,7 @@ const Interview = () => {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const { token } = useAuthStore();
+  const navigate = useNavigate();
 
   const handleSend = async (isFirst = false) => {
     if (!isFirst && !input.trim()) return;
@@ -44,7 +46,15 @@ const Interview = () => {
         { role, history },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      alert(`Interview Finished! Score: ${response.data.result.score}/100\nFeedback: ${response.data.result.feedback}`);
+      navigate('/interview/feedback', {
+        state: {
+          score: response.data.result.score,
+          feedback: response.data.result.feedback,
+          role,
+          transcript: history
+        }
+      });
+
     } catch (error) {
       console.error(error);
     } finally {

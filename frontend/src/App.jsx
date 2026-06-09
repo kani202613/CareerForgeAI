@@ -3,6 +3,7 @@ import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Interview from './pages/Interview';
+import InterviewFeedback from './pages/InterviewFeedback';
 import ResumeUpload from './pages/ResumeUpload';
 import useAuthStore from './store/authStore';
 import { LogOut, Home } from 'lucide-react';
@@ -67,6 +68,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Interview />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/interview/feedback" 
+              element={
+                <ProtectedRoute>
+                  <InterviewFeedback />
                 </ProtectedRoute>
               } 
             />
