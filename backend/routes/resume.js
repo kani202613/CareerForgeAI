@@ -2,15 +2,13 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const pdfParse = require('pdf-parse');
-const { OpenAI } = require('openai');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 const Resume = require('../models/Resume');
 const { authMiddleware } = require('./user');
 
 const upload = multer({ storage: multer.memoryStorage() });
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
-});
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 router.post('/upload', authMiddleware, upload.single('resume'), async (req, res) => {
   try {
@@ -22,7 +20,7 @@ router.post('/upload', authMiddleware, upload.single('resume'), async (req, res)
     const text = data.text;
 
     const prompt = `You are an expert ATS (Applicant Tracking System) and technical recruiter. 
-    Analyze the following resume text and provide a JSON response exactly in this format:
+    Analyze the following resume text and provide a JSON response exactly in this format (no markdown, no extra text, just raw JSON):
     {
       "resumeScore": (number out of 100 representing overall quality),
       "atsScore": (number out of 100 representing ATS parsability and keyword richness),
@@ -33,14 +31,13 @@ router.post('/upload', authMiddleware, upload.single('resume'), async (req, res)
     Resume Text:
     ${text.substring(0, 3000)}`;
 
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
-      messages: [{ role: 'user', content: prompt }],
-      temperature: 0.2,
-      response_format: { type: "json_object" }
-    });
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const result = await model.generateContent(prompt);
+    const rawText = result.response.text();
 
-    const aiResponse = JSON.parse(completion.choices[0].message.content);
+    // Strip markdown code fences if present
+    const cleaned = rawText.replace(/```json|```/g, '').trim();
+    const aiResponse = JSON.parse(cleaned);
 
     const newResume = new Resume({
       userId: req.user.userId,

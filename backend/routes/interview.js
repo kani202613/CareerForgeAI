@@ -1,22 +1,15 @@
 const express = require('express');
 const router = express.Router();
-const { OpenAI } = require('openai');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 const InterviewResult = require('../models/InterviewResult');
 const { authMiddleware } = require('./user');
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
-});
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 // Start an interview session or get next question
 router.post('/chat', authMiddleware, async (req, res) => {
   try {
     const { role, history, newMessage, recruiterMode } = req.body;
-    
-    const messages = [...history];
-    if (newMessage) {
-      messages.push({ role: 'user', content: newMessage });
-    }
 
     let systemPrompt = `You are an expert technical interviewer conducting a mock interview for the role of ${role}. 
     Ask one question at a time. Do not provide the answer. Evaluate the user's previous answer briefly before asking the next question.`;
@@ -28,19 +21,26 @@ router.post('/chat', authMiddleware, async (req, res) => {
       Do not be overly polite. Push for deep details. Ask one question at a time.`;
     }
 
-    const openAiMessages = [
-      { role: 'system', content: systemPrompt },
-      ...messages.map(m => ({ role: m.role, content: m.content }))
-    ];
-
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
-      messages: openAiMessages,
-      temperature: 0.7,
+    // Build conversation for Gemini
+    const model = genAI.getGenerativeModel({
+      model: 'gemini-1.5-flash',
+      systemInstruction: systemPrompt
     });
 
-    const aiResponse = completion.choices[0].message.content;
-    
+    // Build chat history in Gemini format
+    const geminiHistory = history.map(m => ({
+      role: m.role === 'assistant' ? 'model' : 'user',
+      parts: [{ text: m.content }]
+    }));
+
+    const chat = model.startChat({ history: geminiHistory });
+    const result = await chat.sendMessage(newMessage || 'Start the interview with your first question.');
+    const aiResponse = result.response.text();
+
+    const messages = [...history];
+    if (newMessage) {
+      messages.push({ role: 'user', content: newMessage });
+    }
     messages.push({ role: 'assistant', content: aiResponse });
 
     res.json({ messages });
@@ -55,9 +55,9 @@ router.post('/chat', authMiddleware, async (req, res) => {
 router.post('/end', authMiddleware, async (req, res) => {
   try {
     const { role, history } = req.body;
-    
+
     const prompt = `Review the following interview transcript for the role of ${role}.
-    Evaluate the candidate and provide a JSON response exactly in this format:
+    Evaluate the candidate and provide a JSON response exactly in this format (no markdown, no extra text, just raw JSON):
     {
       "score": (number out of 100 representing overall performance),
       "feedback": "Detailed feedback on their performance, communication, and technical depth."
@@ -66,14 +66,13 @@ router.post('/end', authMiddleware, async (req, res) => {
     Transcript:
     ${JSON.stringify(history)}`;
 
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
-      messages: [{ role: 'user', content: prompt }],
-      temperature: 0.2,
-      response_format: { type: "json_object" }
-    });
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const result = await model.generateContent(prompt);
+    const rawText = result.response.text();
 
-    const aiResponse = JSON.parse(completion.choices[0].message.content);
+    // Strip markdown code fences if present
+    const cleaned = rawText.replace(/```json|```/g, '').trim();
+    const aiResponse = JSON.parse(cleaned);
 
     const newInterview = new InterviewResult({
       userId: req.user.userId,
