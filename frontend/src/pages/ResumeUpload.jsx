@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import axios from 'axios';
 import useAuthStore from '../store/authStore';
 
@@ -7,6 +7,7 @@ const ResumeUpload = () => {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const { token } = useAuthStore();
+  const fileInputRef = useRef(null);
 
   const handleUpload = async () => {
     if (!file) return;
@@ -35,14 +36,61 @@ const ResumeUpload = () => {
       <h2 style={{ fontSize: '2rem' }}>Resume Analyzer</h2>
       
       <div className="glass-panel" style={{ maxWidth: '600px' }}>
-        <div className="input-group mb-4">
-          <label className="input-label">Upload Resume (PDF)</label>
+        <div className="input-group mb-6">
+          <label className="input-label mb-2">Upload Resume (PDF)</label>
           <input 
             type="file" 
+            ref={fileInputRef}
             accept="application/pdf"
             onChange={e => setFile(e.target.files[0])}
-            style={{ color: 'var(--text-secondary)' }}
+            style={{ display: 'none' }}
           />
+          <div 
+            onClick={() => fileInputRef.current.click()}
+            style={{
+              border: '2px dashed var(--border-subtle)',
+              borderRadius: 'var(--radius-md)',
+              padding: '2.5rem 1.5rem',
+              textAlign: 'center',
+              cursor: 'pointer',
+              background: 'rgba(255, 255, 255, 0.01)',
+              transition: 'all 0.2s ease',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '0.75rem',
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.borderColor = 'var(--accent-primary)';
+              e.currentTarget.style.background = 'rgba(168, 85, 247, 0.03)';
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.borderColor = 'var(--border-subtle)';
+              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.01)';
+            }}
+          >
+            <div style={{
+              width: '3rem',
+              height: '3rem',
+              borderRadius: '50%',
+              background: 'rgba(168, 85, 247, 0.1)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'var(--accent-primary)',
+              fontSize: '1.25rem'
+            }}>
+              📁
+            </div>
+            <div>
+              <div style={{ fontWeight: '600', fontSize: '0.95rem', color: 'var(--text-primary)', marginBottom: '0.15rem' }}>
+                {file ? file.name : 'Select Resume PDF'}
+              </div>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                {file ? `${(file.size / 1024).toFixed(1)} KB` : 'Click to browse files (PDF only)'}
+              </div>
+            </div>
+          </div>
         </div>
         <button className="btn btn-primary w-full" onClick={handleUpload} disabled={loading || !file}>
           {loading ? 'Analyzing with AI...' : 'Analyze Resume'}
