@@ -10,6 +10,29 @@ const interviewRoutes = require('./routes/interview');
 dotenv.config();
 
 const app = express();
+
+// Diagnostic log capture
+const debugLogs = [];
+const originalError = console.error;
+const originalLog = console.log;
+
+console.log = (...args) => {
+  debugLogs.push(`[LOG] ${new Date().toISOString()} - ${args.map(a => typeof a === 'object' ? JSON.stringify(a) : a).join(' ')}`);
+  if (debugLogs.length > 300) debugLogs.shift();
+  originalLog.apply(console, args);
+};
+
+console.error = (...args) => {
+  debugLogs.push(`[ERR] ${new Date().toISOString()} - ${args.map(a => typeof a === 'object' ? JSON.stringify(a) : a).join(' ')}`);
+  if (debugLogs.length > 300) debugLogs.shift();
+  originalError.apply(console, args);
+};
+
+app.get('/api/debug/logs', (req, res) => {
+  res.setHeader('Content-Type', 'text/plain');
+  res.send(debugLogs.join('\n'));
+});
+
 app.use(cors());
 app.use(express.json());
 
