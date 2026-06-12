@@ -23,7 +23,8 @@ const ResumeUpload = () => {
       setResult(response.data.result);
     } catch (error) {
       console.error(error);
-      alert('Failed to analyze resume');
+      const errMsg = error.response?.data?.message || 'Failed to analyze resume. Please try again.';
+      alert(errMsg);
     } finally {
       setLoading(false);
     }

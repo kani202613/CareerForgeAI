@@ -239,8 +239,22 @@ router.post('/upload', authMiddleware, upload.single('resume'), async (req, res)
       return res.status(400).json({ message: 'No file uploaded' });
     }
 
-    const data = await pdfParse(req.file.buffer);
-    const text = data.text;
+    let text;
+    try {
+      const data = await pdfParse(req.file.buffer);
+      text = data.text;
+    } catch (parseError) {
+      console.error('PDF parsing error:', parseError);
+      return res.status(400).json({ 
+        message: 'Could not read text from your PDF file. Please ensure the file is not password-protected, encrypted, or corrupted, and try saving it as a standard PDF again.' 
+      });
+    }
+
+    if (!text || text.trim().length === 0) {
+      return res.status(400).json({ 
+        message: 'Your resume seems to contain no readable text. If it is a scanned document or an image-only PDF, please convert it to text format first so our ATS scanner can read it.' 
+      });
+    }
 
     // Perform free ATS‑style analysis
     const analysis = atsAnalyze(text);
