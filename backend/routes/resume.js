@@ -17,110 +17,91 @@ function atsAnalyze(text) {
   const strengths = [];
   const improvements = [];
   const suggestions = [];
-
-  // 1. SECTION COMPLETENESS CHECK (Max 25 pts)
-  const sectionDefinitions = {
-    contact: ['contact', 'email', 'phone', 'linkedin', 'github', 'address', 'website'],
-    education: ['education', 'degree', 'university', 'college', 'school', 'gpa', 'academic'],
-    experience: ['experience', 'employment', 'work history', 'professional history', 'career', 'work experience'],
-    skills: ['skills', 'technologies', 'technical skills', 'core competencies', 'expertise'],
-    projects: ['projects', 'personal projects', 'academic projects', 'portfolio'],
-    summary: ['summary', 'objective', 'about me', 'profile', 'professional summary'],
-    certifications: ['certifications', 'awards', 'certificates', 'achievements']
-  };
-
-  let sectionScore = 0;
   const sectionsFound = [];
 
-  // Check contact details (vital for recruiters)
-  const hasContactInfo = ['email', 'phone', 'linkedin', 'github'].some(keyword => lower.includes(keyword)) || /@/.test(lower) || /\d{10}/.test(lower);
-  if (hasContactInfo) {
-    sectionScore += 5;
-    sectionsFound.push('Contact Information');
-    strengths.push('Contact details (email, phone, or professional profiles) were successfully detected.');
+  // 1. SECTION COMPLETENESS & CONTACT VERIFICATION (Max 20 pts)
+  let sectionScore = 0;
+  
+  // Check Contact Details
+  const hasEmail = /@/.test(lower);
+  const hasPhone = /\+?\b\d{10,12}\b|\b\d{3}[-.]?\d{3}[-.]?\d{4}\b/.test(lower);
+  const hasLinkedIn = lower.includes('linkedin.com');
+  const hasGitHub = lower.includes('github.com');
+  
+  if (hasEmail && hasPhone) {
+    if (hasLinkedIn || hasGitHub) {
+      sectionScore += 5;
+      sectionsFound.push('Contact Information');
+      strengths.push('Complete contact information with professional profile links (LinkedIn/GitHub) detected.');
+    } else {
+      sectionScore += 3;
+      sectionsFound.push('Contact Information');
+      improvements.push('Contact details found, but missing professional links (LinkedIn or GitHub).');
+      suggestions.push('Add your LinkedIn and GitHub links to the contact header. Modern tech screeners require verification of your public work.');
+    }
   } else {
-    improvements.push('Contact details are missing or unrecognized. Ensure your email, phone, and professional profiles are easy to find.');
-    suggestions.push('Add a clear "Contact Information" section at the top of your resume containing your email, phone number, LinkedIn link, and GitHub portfolio.');
+    improvements.push('Incomplete contact details. Ensure your email and phone number are clearly visible.');
+    suggestions.push('Add a clear "Contact Info" header with your email, phone, and professional profiles at the top.');
   }
 
-  // Check education
-  const hasEducation = sectionDefinitions.education.some(keyword => lower.includes(keyword));
+  // Check Education
+  const educationKeywords = ['education', 'degree', 'university', 'college', 'school', 'academic'];
+  const hasEducation = educationKeywords.some(k => lower.includes(k));
   if (hasEducation) {
     sectionScore += 5;
     sectionsFound.push('Education');
-    strengths.push('Education details were successfully identified.');
+    strengths.push('Standard Education section successfully detected.');
   } else {
     improvements.push('No standard Education section detected.');
-    suggestions.push('Create a dedicated "Education" section outlining your degrees, major, institution name, and graduation year.');
+    suggestions.push('Create a dedicated "Education" section specifying your degree, major, university, and graduation date.');
   }
 
-  // Check experience
-  const hasExperience = sectionDefinitions.experience.some(keyword => lower.includes(keyword));
+  // Check Work Experience
+  const experienceKeywords = ['experience', 'employment', 'work history', 'professional history', 'career', 'work experience'];
+  const hasExperience = experienceKeywords.some(k => lower.includes(k));
   if (hasExperience) {
     sectionScore += 5;
     sectionsFound.push('Work Experience');
-    strengths.push('Work experience or professional history section detected.');
+    strengths.push('Professional Work Experience section detected.');
   } else {
-    improvements.push('Missing standard Work Experience section.');
-    suggestions.push('Add an "Experience" section detailing your past roles, company names, employment duration, and bullet points showing your achievements.');
+    improvements.push('Missing a standard Work Experience section.');
+    suggestions.push('Add an "Experience" section detailing your professional roles, responsibilities, and achievements.');
   }
 
-  // Check skills
-  const hasSkills = sectionDefinitions.skills.some(keyword => lower.includes(keyword));
+  // Check Skills
+  const skillsKeywords = ['skills', 'technologies', 'technical skills', 'core competencies', 'expertise'];
+  const hasSkills = skillsKeywords.some(k => lower.includes(k));
   if (hasSkills) {
     sectionScore += 5;
     sectionsFound.push('Skills');
-    strengths.push('Skills inventory section identified.');
+    strengths.push('Skills section successfully parsed.');
   } else {
-    improvements.push('Missing a dedicated Skills section.');
-    suggestions.push('Add a "Skills" or "Technical Skills" section listing your programming languages, frameworks, databases, and tools.');
+    improvements.push('No dedicated Skills inventory section found.');
+    suggestions.push('Add a "Skills" section listing your programming languages, frameworks, databases, and developer tools.');
   }
 
-  // Check other supportive sections (Projects, Summary, Certifications)
-  let supportiveCount = 0;
-  if (sectionDefinitions.projects.some(keyword => lower.includes(keyword))) {
-    supportiveCount++;
-    sectionsFound.push('Projects');
-  }
-  if (sectionDefinitions.summary.some(keyword => lower.includes(keyword))) {
-    supportiveCount++;
-    sectionsFound.push('Summary');
-  }
-  if (sectionDefinitions.certifications.some(keyword => lower.includes(keyword))) {
-    supportiveCount++;
-    sectionsFound.push('Certifications/Awards');
-  }
 
-  sectionScore += Math.min(5, supportiveCount * 2.5);
-  if (supportiveCount > 0) {
-    strengths.push(`Found supplementary sections: ${sectionsFound.filter(s => ['Projects', 'Summary', 'Certifications/Awards'].includes(s)).join(', ')}.`);
-  } else {
-    improvements.push('Missing helpful sections like Projects, a Professional Summary, or Certifications.');
-    suggestions.push('Boost your resume relevance by adding a "Projects" section to highlight hands-on work, and a brief "Summary" at the top.');
-  }
-
-  sectionScore = Math.min(25, sectionScore);
-
-  // 2. STRUCTURE & WORD COUNT SCORE (Max 15 pts)
+  // 2. WORD COUNT & DENSITY SCORE (Max 10 pts)
   let structureScore = 0;
-  if (wordCount >= 400 && wordCount <= 900) {
-    structureScore = 15;
-    strengths.push(`Ideal resume word count (${wordCount} words) for a 1-2 page layout, ensuring high scan readability.`);
+  if (wordCount >= 400 && wordCount <= 800) {
+    structureScore = 10;
+    strengths.push(`Ideal word count (${wordCount} words) for standard single-page screeners.`);
   } else if (wordCount >= 250 && wordCount < 400) {
-    structureScore = 10;
-    improvements.push(`Resume word count (${wordCount} words) is a bit low. It might lack detail.`);
-    suggestions.push('Expand your experience and project descriptions. Elaborate on the technologies and methodologies you used.');
-  } else if (wordCount > 900 && wordCount <= 1200) {
-    structureScore = 10;
-    improvements.push(`Resume word count (${wordCount} words) is slightly high. It might exceed the ideal 2-page limit.`);
-    suggestions.push('Consolidate your descriptions. Ensure your experiences are concise and focus strictly on high-impact points.');
+    structureScore = 6;
+    improvements.push(`Resume is slightly brief (${wordCount} words). It may lack the depth required for strict ATS filters.`);
+    suggestions.push('Expand your experience and project descriptions. Add details about your technical implementations.');
+  } else if (wordCount > 800 && wordCount <= 1000) {
+    structureScore = 6;
+    improvements.push(`Resume word count (${wordCount} words) is a bit high. Keep it focused and avoid verbose narratives.`);
+    suggestions.push('Consolidate experience descriptions. Use concise, high-impact bullet points instead of paragraphs.');
   } else {
-    structureScore = 5;
-    improvements.push(`Resume is either extremely short or extremely long (${wordCount} words).`);
-    suggestions.push('Aim for a balanced word count between 400 and 800 words. Remove fluff or add detailed work experience bullet points.');
+    structureScore = 2;
+    improvements.push(`Unusual resume length (${wordCount} words). Very short or very long resumes are flagged by screeners.`);
+    suggestions.push('Aim for a balanced word count between 450 and 750 words to maintain clean structure.');
   }
 
-  // 3. KEYWORD & SKILLS MATCH SCORE (Max 35 pts)
+
+  // 3. KEYWORD & SKILLS MATCH SCORE (Max 30 pts)
   const techKeywords = [
     'javascript', 'typescript', 'python', 'java', 'c++', 'c#', 'php', 'ruby', 'go', 'rust',
     'html', 'css', 'sql', 'postgresql', 'mongodb', 'mysql', 'redis', 'graphql', 'rest', 'api',
@@ -137,38 +118,37 @@ function atsAnalyze(text) {
 
   const techFound = techKeywords.filter(k => lower.includes(k));
   const softFound = softKeywords.filter(k => lower.includes(k));
-
-  let keywordScore = 0;
-
-  if (techFound.length >= 8) {
-    keywordScore += 20;
-    strengths.push(`Excellent technical keyword density (${techFound.length} tools/skills identified).`);
-  } else if (techFound.length >= 4) {
-    keywordScore += 15;
-    strengths.push(`Good representation of technical skills (${techFound.length} keywords found).`);
-  } else if (techFound.length >= 1) {
-    keywordScore += 8;
-    improvements.push(`Low density of technical keywords (${techFound.length} found). Modern ATS filters look for specific tech stacks.`);
-    suggestions.push('Include names of specific tools, libraries, and frameworks you worked with (e.g. Git, REST APIs, Tailwind, Node.js).');
-  } else {
-    improvements.push('No core technical keywords detected in your resume.');
-    suggestions.push('List the programming languages, software, and packages you know. Be specific rather than generic.');
-  }
-
-  if (softFound.length >= 3) {
-    keywordScore += 15;
-    strengths.push('Good incorporation of industry-valued soft skills.');
-  } else if (softFound.length >= 1) {
-    keywordScore += 10;
-    suggestions.push('Incorporate some additional soft skills like "Agile", "Collaboration", "Problem Solving", or "Leadership" to balance technical skills.');
-  } else {
-    keywordScore += 5;
-    improvements.push('No soft skills or professional methodologies detected.');
-  }
-
   const extractedSkills = Array.from(new Set(techFound.concat(softFound)));
 
-  // 4. ACTION VERBS & IMPACT SCORE (Max 25 pts)
+  let keywordScore = 0;
+  
+  if (techFound.length >= 15) {
+    keywordScore += 20;
+    strengths.push(`Strong technical keyword matches (${techFound.length} parsed skills).`);
+  } else if (techFound.length >= 10) {
+    keywordScore += 15;
+    strengths.push(`Decent technical vocabulary (${techFound.length} keywords).`);
+  } else if (techFound.length >= 5) {
+    keywordScore += 10;
+    improvements.push(`Moderate tech keyword density (${techFound.length} found). Target role filters look for specific tech stacks.`);
+    suggestions.push('Add more specific libraries, packages, and database terms (e.g. Redux, PostgreSQL, Webpack, Git, CI/CD) to pass keyword filters.');
+  } else {
+    keywordScore += 3;
+    improvements.push(`Extremely low tech keyword density (${techFound.length} found). ATS filters will likely auto-reject.`);
+    suggestions.push('Detail the tech stacks used in your projects. Mention exact tools, languages, and frameworks.');
+  }
+
+  if (softFound.length >= 4) {
+    keywordScore += 10;
+  } else if (softFound.length >= 2) {
+    keywordScore += 7;
+  } else {
+    keywordScore += 3;
+    suggestions.push('Incorporate standard methodologies like "Agile", "Scrum", or "Collaboration" to show team-readiness.');
+  }
+
+
+  // 4. ACTION VERBS & METRICS (Max 25 pts)
   const actionVerbs = [
     'designed', 'developed', 'built', 'led', 'managed', 'optimized', 'engineered', 'launched',
     'implemented', 'automated', 'created', 'increased', 'decreased', 'reduced', 'improved',
@@ -185,42 +165,91 @@ function atsAnalyze(text) {
 
   let impactScore = 0;
 
-  if (verbsFound.length >= 6) {
+  if (verbsFound.length >= 8) {
     impactScore += 15;
-    strengths.push('Excellent use of action-oriented verbs, showing high initiative.');
-  } else if (verbsFound.length >= 3) {
+    strengths.push('Excellent use of strong action verbs showing direct ownership.');
+  } else if (verbsFound.length >= 4) {
     impactScore += 10;
-    strengths.push(`Good action verbs usage (${verbsFound.length} unique verbs).`);
+    strengths.push(`Good verb usage (${verbsFound.length} unique action verbs).`);
   } else if (verbsFound.length >= 1) {
     impactScore += 5;
-    improvements.push('Passive language detected. Your resume uses very few strong action verbs.');
+    improvements.push('Limited action verbs found. Resume uses a passive tone.');
     suggestions.push('Start your experience bullet points with strong action verbs like "Spearheaded", "Optimized", "Designed", or "Automated" instead of "Responsible for".');
   } else {
-    improvements.push('No action verbs identified. Resume seems descriptive rather than achievement-oriented.');
+    improvements.push('No strong action verbs identified. Tone is too descriptive.');
   }
 
-  if (numbersFound.length >= 3) {
+  if (numbersFound.length >= 5) {
     impactScore += 10;
-    strengths.push('Strong quantification! You included metrics and numbers to back up your achievements.');
+    strengths.push('Excellent quantification of achievements with multiple metrics.');
+  } else if (numbersFound.length >= 3) {
+    impactScore += 6;
+    strengths.push('Good inclusion of numbers to support some achievements.');
   } else if (numbersFound.length >= 1) {
-    impactScore += 5;
-    suggestions.push('Add more numbers and metrics. Quantifying achievements (e.g., "reduced latency by 15%", "managed 3 projects") helps establish credibility.');
+    impactScore += 3;
+    improvements.push('Insufficient metric details. Only a few numbers or percentages found.');
+    suggestions.push('Add more numbers and metrics. Quantify achievements (e.g., "reduced latency by 15%", "managed 3 projects") to establish professional credibility.');
   } else {
-    improvements.push('Lacks quantifiable achievements. No metrics, percentages, or numbers found in your bullet points.');
+    improvements.push('Completely lacks quantifiable achievements. No metrics, percentages, or numbers found.');
     suggestions.push('Quantify the results of your work. Add details like: % speed increases, % revenue changes, number of users served, or time saved.');
   }
 
-  // 5. SCORE INTEGRATION & CALIBRATION
-  const atsScore = Math.round(sectionScore + structureScore + keywordScore + impactScore);
 
-  let resumeScore = atsScore;
-  if (atsScore > 0 && atsScore < 50) {
-    resumeScore = Math.min(60, Math.round(atsScore + 15));
-  } else if (atsScore >= 50 && atsScore < 85) {
-    resumeScore = Math.min(88, Math.round(atsScore + 5));
+  // 5. FORMATTING & ATS BEST PRACTICES (Max 15 pts)
+  let formattingScore = 15;
+
+  // Penalty A: Verb Repetition (deduct 3 pts per highly repeated verb, max 6 pts)
+  const verbCounts = {};
+  words.forEach(w => {
+    const word = w.toLowerCase().replace(/[^a-z]/g, '');
+    if (actionVerbs.includes(word)) {
+      verbCounts[word] = (verbCounts[word] || 0) + 1;
+    }
+  });
+  
+  let repeatedVerbsCount = 0;
+  Object.keys(verbCounts).forEach(v => {
+    if (verbCounts[v] > 3) {
+      repeatedVerbsCount++;
+      formattingScore -= 3;
+    }
+  });
+  formattingScore = Math.max(9, formattingScore);
+
+  if (repeatedVerbsCount > 0) {
+    improvements.push('Action verb repetition detected. Repeating words makes the resume look repetitive.');
+    suggestions.push('Avoid repeating action verbs (e.g. using "developed" or "built" multiple times). Use diverse synonyms like "engineered", "implemented", or "crafted".');
   }
 
-  const feedbackSummary = `Your resume scored ${resumeScore}/100. It contains standard sections like ${sectionsFound.slice(0, 3).join(', ')}. To optimize further for ATS compliance, aim to increase technical keywords (current: ${techFound.length}) and include quantifiable achievements.`;
+  // Penalty B: Weak / Passive Language (deduct 2 pts per occurrence, max 6 pts)
+  const weakWords = ['assisted', 'helped', 'responsible for', 'worked on', 'participated in', 'tasked with'];
+  let weakPhrasesCount = 0;
+  weakWords.forEach(weak => {
+    if (lower.includes(weak)) {
+      weakPhrasesCount++;
+      formattingScore -= 2;
+    }
+  });
+  formattingScore = Math.max(9, formattingScore);
+
+  if (weakPhrasesCount > 0) {
+    improvements.push('Passive/weak language detected (e.g. "responsible for", "helped").');
+    suggestions.push('Replace weak phrases like "responsible for" or "helped with" with strong active verbs like "executed", "led", "automated", or "engineered".');
+  }
+
+  // Penalty C: Missing professional links (deduct 3 pts)
+  if (!hasLinkedIn && !hasGitHub) {
+    formattingScore -= 3;
+  }
+
+  formattingScore = Math.max(0, formattingScore);
+
+
+  // 6. SCORE INTEGRATION (HONEST & STRICT - NO UPWARD CALIBRATION)
+  const atsScore = Math.round(sectionScore + structureScore + keywordScore + impactScore + formattingScore);
+  const resumeScore = atsScore;
+
+  const feedbackSummary = `Your resume scored ${atsScore}/100. It contains standard sections like ${sectionsFound.slice(0, 3).join(', ')}. To optimize further for ATS compliance, aim to increase technical keywords (current: ${techFound.length}) and include quantifiable achievements.`;
 
   return {
     resumeScore,
