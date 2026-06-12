@@ -17,244 +17,275 @@ function atsAnalyze(text) {
   const strengths = [];
   const improvements = [];
   const suggestions = [];
+  const warnings = [];
   const sectionsFound = [];
 
-  // 1. SECTION COMPLETENESS & CONTACT VERIFICATION (Max 20 pts)
+  // --- CANDIDATE TYPE AUTO-DETECTION ---
+  const experiencedTerms = ['senior', 'lead', 'manager', 'principal', 'head', 'director', 'architect', 'years of experience', 'years\' experience', '3+ years', '4+ years', '5+ years', '10+ years'];
+  const hasExperiencedTerm = experiencedTerms.some(term => lower.includes(term));
+  
+  const years = (text.match(/\b(20\d{2})\b/g) || []).map(Number);
+  let yearSpan = 0;
+  if (years.length > 1) {
+    const minYear = Math.min(...years);
+    const maxYear = Math.max(...years);
+    yearSpan = maxYear - minYear;
+  }
+  
+  const isExperienced = hasExperiencedTerm || yearSpan >= 3;
+  const candidateProfile = isExperienced ? 'Experienced (3+ years)' : 'Fresher (0-2 years)';
+
+  // --- 1. SECTION COMPLETENESS & CONTACT VERIFICATION ---
   let sectionScore = 0;
   
-  // Check Contact Details
+  const standardSections = {
+    education: { keywords: ['education', 'academic background', 'qualification'], title: 'Education' },
+    experience: { keywords: ['experience', 'employment history', 'work history', 'professional experience'], title: 'Work Experience' },
+    skills: { keywords: ['skills', 'technical skills', 'core competencies', 'expertise'], title: 'Skills' },
+    projects: { keywords: ['projects', 'personal projects', 'academic projects'], title: 'Projects' },
+    summary: { keywords: ['summary', 'professional summary', 'profile', 'about me'], title: 'Summary' }
+  };
+
+  // Enforce Section Header Strictness
+  let nonStandardHeaderCount = 0;
+  if (lower.includes('technical qualification')) {
+    nonStandardHeaderCount++;
+    warnings.push("Non-standard section header 'Technical Qualification' detected. ATS scanners may fail to parse your skills/education. Rename this section to 'Skills' or 'Education'.");
+    improvements.push("Uses non-standard section title 'Technical Qualification'.");
+  }
+  if (lower.includes('academic details') || lower.includes('academic profile')) {
+    nonStandardHeaderCount++;
+    warnings.push("Non-standard section header 'Academic Details' detected. Rename this section to 'Education'.");
+    improvements.push("Uses non-standard section title 'Academic Details'.");
+  }
+
+  // Verify Contact Details
   const hasEmail = /@/.test(lower);
   const hasPhone = /\+?\b\d{10,12}\b|\b\d{3}[-.]?\d{3}[-.]?\d{4}\b/.test(lower);
   const hasLinkedIn = lower.includes('linkedin.com');
   const hasGitHub = lower.includes('github.com');
   
+  let contactScore = 0;
   if (hasEmail && hasPhone) {
+    contactScore += 3;
+    sectionsFound.push('Contact Information');
     if (hasLinkedIn || hasGitHub) {
-      sectionScore += 5;
-      sectionsFound.push('Contact Information');
-      strengths.push('Complete contact information with professional profile links (LinkedIn/GitHub) detected.');
+      contactScore += 2;
+      strengths.push('Complete contact information with profile links (LinkedIn/GitHub) detected.');
     } else {
-      sectionScore += 3;
-      sectionsFound.push('Contact Information');
       improvements.push('Contact details found, but missing professional links (LinkedIn or GitHub).');
-      suggestions.push('Add your LinkedIn and GitHub links to the contact header. Modern tech screeners require verification of your public work.');
+      suggestions.push('Add your LinkedIn and GitHub links to your contact header.');
     }
   } else {
     improvements.push('Incomplete contact details. Ensure your email and phone number are clearly visible.');
-    suggestions.push('Add a clear "Contact Info" header with your email, phone, and professional profiles at the top.');
+    suggestions.push('Add an email, phone number, and LinkedIn profile link at the top of your resume.');
   }
 
-  // Check Education
-  const educationKeywords = ['education', 'degree', 'university', 'college', 'school', 'academic'];
-  const hasEducation = educationKeywords.some(k => lower.includes(k));
+  // Verify Standard sections
+  const hasEducation = standardSections.education.keywords.some(k => lower.includes(k));
+  const hasExperience = standardSections.experience.keywords.some(k => lower.includes(k));
+  const hasSkills = standardSections.skills.keywords.some(k => lower.includes(k));
+  const hasProjects = standardSections.projects.keywords.some(k => lower.includes(k));
+
   if (hasEducation) {
     sectionScore += 5;
     sectionsFound.push('Education');
-    strengths.push('Standard Education section successfully detected.');
-  } else {
-    improvements.push('No standard Education section detected.');
-    suggestions.push('Create a dedicated "Education" section specifying your degree, major, university, and graduation date.');
   }
-
-  // Check Work Experience
-  const experienceKeywords = ['experience', 'employment', 'work history', 'professional history', 'career', 'work experience'];
-  const hasExperience = experienceKeywords.some(k => lower.includes(k));
   if (hasExperience) {
     sectionScore += 5;
     sectionsFound.push('Work Experience');
-    strengths.push('Professional Work Experience section detected.');
-  } else {
-    improvements.push('Missing a standard Work Experience section.');
-    suggestions.push('Add an "Experience" section detailing your professional roles, responsibilities, and achievements.');
   }
-
-  // Check Skills
-  const skillsKeywords = ['skills', 'technologies', 'technical skills', 'core competencies', 'expertise'];
-  const hasSkills = skillsKeywords.some(k => lower.includes(k));
   if (hasSkills) {
     sectionScore += 5;
     sectionsFound.push('Skills');
-    strengths.push('Skills section successfully parsed.');
-  } else {
-    improvements.push('No dedicated Skills inventory section found.');
-    suggestions.push('Add a "Skills" section listing your programming languages, frameworks, databases, and developer tools.');
+  }
+  if (hasProjects) {
+    sectionScore += 5;
+    sectionsFound.push('Projects');
   }
 
+  // --- 2. LAYOUT & FORMATTING CHECKS ---
+  let formattingScore = 25;
 
-  // 2. WORD COUNT & DENSITY SCORE (Max 10 pts)
-  let structureScore = 0;
-  if (wordCount >= 400 && wordCount <= 800) {
-    structureScore = 10;
-    strengths.push(`Ideal word count (${wordCount} words) for standard single-page screeners.`);
-  } else if (wordCount >= 250 && wordCount < 400) {
-    structureScore = 6;
-    improvements.push(`Resume is slightly brief (${wordCount} words). It may lack the depth required for strict ATS filters.`);
-    suggestions.push('Expand your experience and project descriptions. Add details about your technical implementations.');
-  } else if (wordCount > 800 && wordCount <= 1000) {
-    structureScore = 6;
-    improvements.push(`Resume word count (${wordCount} words) is a bit high. Keep it focused and avoid verbose narratives.`);
-    suggestions.push('Consolidate experience descriptions. Use concise, high-impact bullet points instead of paragraphs.');
+  // Check for bullet points in the Projects/Experience sections
+  const bulletSymbols = /[•\-*⁃‣○▪▫]/;
+  const hasBulletPoints = bulletSymbols.test(text);
+  if (!hasBulletPoints && (hasProjects || hasExperience)) {
+    formattingScore -= 10;
+    warnings.push("Paragraph format detected instead of list structure. ATS parsers cannot extract details from long paragraphs. Rewrite your experience/projects using short, standard bullet points (•).");
+    improvements.push('Experience or Projects sections use paragraph formatting instead of bullet lists.');
   } else {
-    structureScore = 2;
-    improvements.push(`Unusual resume length (${wordCount} words). Very short or very long resumes are flagged by screeners.`);
-    suggestions.push('Aim for a balanced word count between 450 and 750 words to maintain clean structure.');
+    strengths.push('Clean bullet-point layout detected.');
   }
 
+  // Check for "Objective" vs "Summary"
+  if (lower.includes('objective')) {
+    formattingScore -= 5;
+    warnings.push("Career 'Objective' detected. Objective statements are outdated. Replace your objective with a 2-line targeted Professional Summary reflecting your skills.");
+    improvements.push("Resume contains an 'Objective' statement instead of a 'Summary'.");
+  }
 
-  // 3. KEYWORD & SKILLS MATCH SCORE (Max 30 pts)
+  // Check for missing project links
+  const projectSectionIndex = lower.indexOf('project');
+  if (projectSectionIndex !== -1) {
+    const projectText = lower.substring(projectSectionIndex);
+    const hasProjectLinks = projectText.includes('github.com') || projectText.includes('live') || projectText.includes('demo') || projectText.includes('http') || projectText.includes('↗');
+    if (!hasProjectLinks) {
+      formattingScore -= 5;
+      warnings.push("Missing project repositories or live links. Add GitHub URLs or live demo links (e.g. ↗) to verify your projects.");
+      improvements.push('Projects lack verification links (GitHub/Live Demo).');
+    }
+  }
+
+  // Apply non-standard headers penalty
+  formattingScore -= (nonStandardHeaderCount * 5);
+  formattingScore = Math.max(0, formattingScore);
+
+  // Formatting warnings (visual noise, tables, unreadable dates)
+  if (/[●○★☆■□]/.test(text) || lower.includes('5/5') || lower.includes('10/10') || /\b\d{2}%\b/.test(text)) {
+    warnings.push("Avoid visual skill ratings (e.g. stars, circles, progress bars). ATS scanners read them as garbled characters or visual noise.");
+  }
+
+  if (/\b(spring|summer|fall|winter|autumn)\s+\d{4}\b/i.test(text)) {
+    warnings.push("Seasonal dates (e.g. 'Spring 2022') detected. ATS systems cannot calculate work duration from seasons. Use standard month/year format (e.g. '04/2022' or 'April 2022').");
+  }
+
+  if (text.includes('|') || (text.match(/\t{2,}/g) || []).length > 2) {
+    warnings.push("Potential table structure or vertical separators (|) detected. Tables and complex multi-column layouts confuse older ATS parsers, merging text in the wrong order.");
+  }
+
+  // --- 3. KEYWORD & SKILLS MATCH ---
   const techKeywords = [
     'javascript', 'typescript', 'python', 'java', 'c++', 'c#', 'php', 'ruby', 'go', 'rust',
     'html', 'css', 'sql', 'postgresql', 'mongodb', 'mysql', 'redis', 'graphql', 'rest', 'api',
     'react', 'vue', 'angular', 'svelte', 'next.js', 'express', 'node.js', 'django', 'flask',
-    'spring boot', 'laravel', 'rails', 'aws', 'docker', 'kubernetes', 'git', 'github', 'gitlab',
+    'spring boot', 'springboot', 'laravel', 'rails', 'aws', 'docker', 'kubernetes', 'git', 'github', 'gitlab',
     'ci/cd', 'jenkins', 'devops', 'linux', 'cloud', 'serverless', 'microservices', 'firebase',
-    'tailwind', 'bootstrap', 'webpack', 'redux', 'npm', 'yarn', 'jquery', 'sass', 'sqlite'
+    'tailwind', 'bootstrap', 'webpack', 'redux', 'npm', 'yarn', 'jquery', 'sass', 'sqlite', 'jdbc'
   ];
   const softKeywords = [
     'leadership', 'communication', 'team', 'collaboration', 'problem solving', 'agile', 'scrum',
     'project management', 'critical thinking', 'adaptability', 'creativity', 'mentoring',
-    'time management', 'flexibility', 'organization', 'negotiation'
+    'time management', 'flexibility', 'organization', 'negotiation', 'oop', 'object oriented'
   ];
 
   const techFound = techKeywords.filter(k => lower.includes(k));
   const softFound = softKeywords.filter(k => lower.includes(k));
   const extractedSkills = Array.from(new Set(techFound.concat(softFound)));
 
+  // Keyword stuffing check
+  const stuffedKeywords = [];
+  techKeywords.forEach(k => {
+    const regex = new RegExp(`\\b${k}\\b`, 'gi');
+    const matches = (text.match(regex) || []).length;
+    if (matches > 5) {
+      stuffedKeywords.push(k);
+    }
+  });
+  if (stuffedKeywords.length > 0) {
+    formattingScore -= Math.min(15, stuffedKeywords.length * 5);
+    warnings.push(`Keyword stuffing detected for terms: ${stuffedKeywords.join(', ')}. Repeating keywords excessively to cheat filters is penalized by modern ATS scanners.`);
+  }
+
+  // Keyword Score calculation
   let keywordScore = 0;
-  
-  if (techFound.length >= 15) {
-    keywordScore += 20;
-    strengths.push(`Strong technical keyword matches (${techFound.length} parsed skills).`);
-  } else if (techFound.length >= 10) {
-    keywordScore += 15;
-    strengths.push(`Decent technical vocabulary (${techFound.length} keywords).`);
-  } else if (techFound.length >= 5) {
-    keywordScore += 10;
-    improvements.push(`Moderate tech keyword density (${techFound.length} found). Target role filters look for specific tech stacks.`);
-    suggestions.push('Add more specific libraries, packages, and database terms (e.g. Redux, PostgreSQL, Webpack, Git, CI/CD) to pass keyword filters.');
+  if (isExperienced) {
+    if (techFound.length >= 15) keywordScore += 35;
+    else if (techFound.length >= 10) keywordScore += 25;
+    else if (techFound.length >= 5) keywordScore += 15;
+    else keywordScore += 5;
+
+    if (softFound.length >= 3) keywordScore += 5;
+    else keywordScore += 2;
   } else {
-    keywordScore += 3;
-    improvements.push(`Extremely low tech keyword density (${techFound.length} found). ATS filters will likely auto-reject.`);
-    suggestions.push('Detail the tech stacks used in your projects. Mention exact tools, languages, and frameworks.');
+    if (techFound.length >= 10) keywordScore += 25;
+    else if (techFound.length >= 5) keywordScore += 15;
+    else keywordScore += 5;
+
+    if (softFound.length >= 4) keywordScore += 15;
+    else if (softFound.length >= 2) keywordScore += 10;
+    else keywordScore += 5;
   }
 
-  if (softFound.length >= 4) {
-    keywordScore += 10;
-  } else if (softFound.length >= 2) {
-    keywordScore += 7;
-  } else {
-    keywordScore += 3;
-    suggestions.push('Incorporate standard methodologies like "Agile", "Scrum", or "Collaboration" to show team-readiness.');
+  // --- 4. EDUCATION & CERTIFICATIONS ---
+  let educationScore = 0;
+  if (hasEducation) {
+    educationScore += 10;
+    const hasGPA = /gpa|cgpa|\b\d\.\d{1,2}\b|\b\d{2}%\b/.test(lower);
+    if (hasGPA) educationScore += 5;
+    
+    const hasDegree = /bachelor|master|b\.s|b\.tech|m\.s|m\.tech|b.e|degree/i.test(lower);
+    if (hasDegree) educationScore += 5;
   }
+  const hasCert = /certification|certifications|certified|nptel|credential/i.test(lower);
+  if (hasCert) educationScore += 5;
+  educationScore = Math.min(20, educationScore);
 
-
-  // 4. ACTION VERBS & METRICS (Max 25 pts)
+  // --- 5. WORK HISTORY / PROJECTS ---
+  let projectScore = 0;
   const actionVerbs = [
     'designed', 'developed', 'built', 'led', 'managed', 'optimized', 'engineered', 'launched',
     'implemented', 'automated', 'created', 'increased', 'decreased', 'reduced', 'improved',
     'saved', 'analyzed', 'coordinated', 'established', 'spearheaded', 'formulated', 'generated',
     'drove', 'upgraded', 'solved', 'resolved', 'streamlined', 'pioneered', 'directed'
   ];
-
   const verbsFound = actionVerbs.filter(v => lower.includes(v));
+  
   const numbersFound = (text.match(/\b\d+(?:%|\s*percent|x|\s*multiplier|\+)?\b/g) || [])
     .filter(n => {
       const val = parseInt(n, 10);
       return val > 0 && val !== 1 && (val < 1900 || val > 2100);
     });
 
-  let impactScore = 0;
-
-  if (verbsFound.length >= 8) {
-    impactScore += 15;
-    strengths.push('Excellent use of strong action verbs showing direct ownership.');
-  } else if (verbsFound.length >= 4) {
-    impactScore += 10;
-    strengths.push(`Good verb usage (${verbsFound.length} unique action verbs).`);
-  } else if (verbsFound.length >= 1) {
-    impactScore += 5;
-    improvements.push('Limited action verbs found. Resume uses a passive tone.');
-    suggestions.push('Start your experience bullet points with strong action verbs like "Spearheaded", "Optimized", "Designed", or "Automated" instead of "Responsible for".');
+  if (isExperienced) {
+    if (hasExperience) projectScore += 10;
+    if (numbersFound.length >= 5) projectScore += 10;
+    else if (numbersFound.length >= 3) projectScore += 6;
+    else if (numbersFound.length >= 1) projectScore += 3;
+    
+    if (verbsFound.length >= 8) projectScore += 10;
+    else if (verbsFound.length >= 4) projectScore += 6;
+    else if (verbsFound.length >= 1) projectScore += 3;
   } else {
-    improvements.push('No strong action verbs identified. Tone is too descriptive.');
+    if (hasProjects) projectScore += 10;
+    if (techFound.length >= 8) projectScore += 5;
+    if (verbsFound.length >= 5) projectScore += 5;
+    else if (verbsFound.length >= 2) projectScore += 3;
+    if (numbersFound.length >= 3) projectScore += 5;
+    else if (numbersFound.length >= 1) projectScore += 2;
   }
 
-  if (numbersFound.length >= 5) {
-    impactScore += 10;
-    strengths.push('Excellent quantification of achievements with multiple metrics.');
-  } else if (numbersFound.length >= 3) {
-    impactScore += 6;
-    strengths.push('Good inclusion of numbers to support some achievements.');
-  } else if (numbersFound.length >= 1) {
-    impactScore += 3;
-    improvements.push('Insufficient metric details. Only a few numbers or percentages found.');
-    suggestions.push('Add more numbers and metrics. Quantify achievements (e.g., "reduced latency by 15%", "managed 3 projects") to establish professional credibility.');
+  // Section completeness base score
+  const finalSectionScore = Math.min(isExperienced ? 20 : 30, sectionScore + contactScore);
+
+  // Structure Score (Max 10)
+  let structureScore = 0;
+  if (wordCount >= 400 && wordCount <= 800) structureScore = 10;
+  else if (wordCount >= 250 && wordCount < 400) structureScore = 6;
+  else if (wordCount > 800 && wordCount <= 1000) structureScore = 6;
+  else structureScore = 2;
+
+  // --- FINAL SCORE INTEGRATION (STRICT & HONEST) ---
+  let atsScore = 0;
+  if (isExperienced) {
+    const formattingWeight = Math.round((formattingScore / 25) * 6 + (structureScore / 10) * 4);
+    atsScore = Math.round(keywordScore + projectScore + finalSectionScore + formattingWeight);
   } else {
-    improvements.push('Completely lacks quantifiable achievements. No metrics, percentages, or numbers found.');
-    suggestions.push('Quantify the results of your work. Add details like: % speed increases, % revenue changes, number of users served, or time saved.');
+    const formattingWeight = Math.round((formattingScore / 25) * 6 + (structureScore / 10) * 4);
+    atsScore = Math.round(keywordScore + finalSectionScore + educationScore + formattingWeight);
   }
 
-
-  // 5. FORMATTING & ATS BEST PRACTICES (Max 15 pts)
-  let formattingScore = 15;
-
-  // Penalty A: Verb Repetition (deduct 3 pts per highly repeated verb, max 6 pts)
-  const verbCounts = {};
-  words.forEach(w => {
-    const word = w.toLowerCase().replace(/[^a-z]/g, '');
-    if (actionVerbs.includes(word)) {
-      verbCounts[word] = (verbCounts[word] || 0) + 1;
-    }
-  });
-  
-  let repeatedVerbsCount = 0;
-  Object.keys(verbCounts).forEach(v => {
-    if (verbCounts[v] > 3) {
-      repeatedVerbsCount++;
-      formattingScore -= 3;
-    }
-  });
-  formattingScore = Math.max(9, formattingScore);
-
-  if (repeatedVerbsCount > 0) {
-    improvements.push('Action verb repetition detected. Repeating words makes the resume look repetitive.');
-    suggestions.push('Avoid repeating action verbs (e.g. using "developed" or "built" multiple times). Use diverse synonyms like "engineered", "implemented", or "crafted".');
-  }
-
-  // Penalty B: Weak / Passive Language (deduct 2 pts per occurrence, max 6 pts)
-  const weakWords = ['assisted', 'helped', 'responsible for', 'worked on', 'participated in', 'tasked with'];
-  let weakPhrasesCount = 0;
-  weakWords.forEach(weak => {
-    if (lower.includes(weak)) {
-      weakPhrasesCount++;
-      formattingScore -= 2;
-    }
-  });
-  formattingScore = Math.max(9, formattingScore);
-
-  if (weakPhrasesCount > 0) {
-    improvements.push('Passive/weak language detected (e.g. "responsible for", "helped").');
-    suggestions.push('Replace weak phrases like "responsible for" or "helped with" with strong active verbs like "executed", "led", "automated", or "engineered".');
-  }
-
-  // Penalty C: Missing professional links (deduct 3 pts)
-  if (!hasLinkedIn && !hasGitHub) {
-    formattingScore -= 3;
-  }
-
-  formattingScore = Math.max(0, formattingScore);
-
-
-  // 6. SCORE INTEGRATION (HONEST & STRICT - NO UPWARD CALIBRATION)
-  const atsScore = Math.round(sectionScore + structureScore + keywordScore + impactScore + formattingScore);
+  atsScore = Math.max(0, Math.min(100, atsScore));
   const resumeScore = atsScore;
 
-  const feedbackSummary = `Your resume scored ${atsScore}/100. It contains standard sections like ${sectionsFound.slice(0, 3).join(', ')}. To optimize further for ATS compliance, aim to increase technical keywords (current: ${techFound.length}) and include quantifiable achievements.`;
+  const feedbackSummary = `Your resume parsed profile is classified as: ${candidateProfile}. Overall ATS Score: ${atsScore}/100. It contains standard sections like ${sectionsFound.slice(0, 3).join(', ')}.`;
 
   return {
     resumeScore,
     atsScore,
     extractedSkills,
+    candidateProfile,
+    warnings,
     feedback: feedbackSummary,
     strengths: strengths.slice(0, 4),
     improvements: improvements.slice(0, 4),
@@ -296,7 +327,9 @@ router.post('/upload', authMiddleware, upload.single('resume'), async (req, res)
       feedback: analysis.feedback,
       strengths: analysis.strengths,
       improvements: analysis.improvements,
-      suggestions: analysis.suggestions
+      suggestions: analysis.suggestions,
+      candidateProfile: analysis.candidateProfile,
+      warnings: analysis.warnings
     });
 
     await newResume.save();

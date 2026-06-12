@@ -9,7 +9,9 @@ const resumeSchema = new mongoose.Schema({
   feedback: { type: String },
   strengths: [{ type: String }],
   improvements: [{ type: String }],
-  suggestions: [{ type: String }]
+  suggestions: [{ type: String }],
+  candidateProfile: { type: String },
+  warnings: [{ type: String }]
 }, { timestamps: true });
 
 module.exports = mongoose.model('Resume', resumeSchema);

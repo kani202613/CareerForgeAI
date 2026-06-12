@@ -51,7 +51,23 @@ const ResumeUpload = () => {
 
       {result && (
         <div className="glass-panel animate-fade-in flex-col gap-4 mt-8">
-          <h3 style={{ fontSize: '1.5rem', color: 'var(--accent-tertiary)' }}>Analysis Results</h3>
+          <div className="flex items-center justify-between" style={{ flexWrap: 'wrap', gap: '1rem' }}>
+            <h3 style={{ fontSize: '1.5rem', color: 'var(--accent-tertiary)', margin: 0 }}>Analysis Results</h3>
+            {result.candidateProfile && (
+              <span style={{ 
+                background: 'rgba(59, 130, 246, 0.1)', 
+                color: '#3b82f6', 
+                padding: '0.25rem 0.75rem', 
+                borderRadius: '0.5rem', 
+                fontSize: '0.875rem', 
+                fontWeight: '600',
+                border: '1px solid rgba(59, 130, 246, 0.2)'
+              }}>
+                Target Profile: {result.candidateProfile}
+              </span>
+            )}
+          </div>
+          
           <div className="flex gap-8">
             <div>
               <div className="text-muted text-sm">Overall Score</div>
@@ -62,6 +78,27 @@ const ResumeUpload = () => {
               <div className="text-gradient" style={{ fontSize: '2rem', fontWeight: 'bold' }}>{result.atsScore}/100</div>
             </div>
           </div>
+
+          {result.warnings && result.warnings.length > 0 && (
+            <div 
+              className="glass-panel" 
+              style={{ 
+                background: 'rgba(239, 68, 68, 0.05)', 
+                borderLeft: '4px solid #ef4444', 
+                padding: '1.25rem', 
+                borderRadius: 'var(--radius-md)'
+              }}
+            >
+              <h4 style={{ margin: '0 0 0.75rem 0', color: '#ef4444', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.1rem' }}>
+                <span style={{ fontSize: '1.2rem' }}>🚫</span> Critical ATS Warnings
+              </h4>
+              <ul style={{ paddingLeft: '1.25rem', margin: 0, color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                {result.warnings.map((w, idx) => (
+                  <li key={idx} style={{ lineHeight: '1.5' }}>{w}</li>
+                ))}
+              </ul>
+            </div>
+          )}
           <div>
             <h4 style={{ marginBottom: '0.5rem' }}>Extracted Skills</h4>
             <div className="flex gap-2" style={{ flexWrap: 'wrap' }}>
