@@ -95,21 +95,35 @@ router.post('/chat', authMiddleware, async (req, res) => {
 
     // Determine which question to ask next
     const questions = getQuestions(role);
+    
+    // Find already asked standard questions from history
+    const askedQuestions = messages
+      .filter(m => m.role === 'assistant')
+      .map(m => m.content);
+
+    // Filter questions that are present in the question bank but haven't been asked yet
+    const remainingQuestions = questions.filter(q => !askedQuestions.includes(q));
+    const standardAskedCount = questions.filter(q => askedQuestions.includes(q)).length;
+    
     const assistantCount = messages.filter(m => m.role === 'assistant').length;
 
     let aiResponse;
 
-    if (assistantCount >= questions.length) {
-      // All questions asked
+    if (standardAskedCount >= questions.length) {
+      // All questions from bank asked
       aiResponse = 'Great, that concludes our interview! Click "End Interview" to see your evaluation and score.';
     } else if (recruiterMode && assistantCount > 0 && assistantCount % 2 === 1) {
       // In recruiter mode, every other response is a tough follow-up
       const idx = Math.floor(Math.random() * recruiterFollowUps.length);
       aiResponse = recruiterFollowUps[idx];
     } else {
-      // Ask the next question from the bank
-      const qIndex = Math.min(assistantCount, questions.length - 1);
-      aiResponse = questions[qIndex];
+      // Ask a random unasked question from the bank
+      if (remainingQuestions.length > 0) {
+        const idx = Math.floor(Math.random() * remainingQuestions.length);
+        aiResponse = remainingQuestions[idx];
+      } else {
+        aiResponse = 'Great, that concludes our interview! Click "End Interview" to see your evaluation and score.';
+      }
     }
 
     messages.push({ role: 'assistant', content: aiResponse });

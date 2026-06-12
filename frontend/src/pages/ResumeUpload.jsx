@@ -71,9 +71,83 @@ const ResumeUpload = () => {
               ))}
             </div>
           </div>
-          <div style={{ background: 'var(--bg-base)', padding: '1rem', borderRadius: 'var(--radius-md)', marginTop: '1rem' }}>
-            <h4 style={{ marginBottom: '0.5rem', color: 'var(--accent-secondary)' }}>Feedback</h4>
-            <p>{result.feedback}</p>
+          <div style={{ marginTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            {/* Strengths Card */}
+            {result.strengths && result.strengths.length > 0 && (
+              <div 
+                className="glass-panel" 
+                style={{ 
+                  background: 'rgba(16, 185, 129, 0.05)', 
+                  borderLeft: '4px solid #10b981', 
+                  padding: '1.25rem', 
+                  borderRadius: 'var(--radius-md)',
+                  transition: 'transform 0.2s ease, box-shadow 0.2s ease'
+                }}
+              >
+                <h4 style={{ margin: '0 0 0.75rem 0', color: '#10b981', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.1rem' }}>
+                  <span style={{ fontSize: '1.2rem' }}>👍</span> Key Strengths
+                </h4>
+                <ul style={{ paddingLeft: '1.25rem', margin: 0, color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  {result.strengths.map((s, idx) => (
+                    <li key={idx} style={{ lineHeight: '1.5' }}>{s}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Improvements Card */}
+            {result.improvements && result.improvements.length > 0 && (
+              <div 
+                className="glass-panel" 
+                style={{ 
+                  background: 'rgba(245, 158, 11, 0.05)', 
+                  borderLeft: '4px solid #f59e0b', 
+                  padding: '1.25rem', 
+                  borderRadius: 'var(--radius-md)',
+                  transition: 'transform 0.2s ease, box-shadow 0.2s ease'
+                }}
+              >
+                <h4 style={{ margin: '0 0 0.75rem 0', color: '#f59e0b', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.1rem' }}>
+                  <span style={{ fontSize: '1.2rem' }}>⚠️</span> Areas for Improvement
+                </h4>
+                <ul style={{ paddingLeft: '1.25rem', margin: 0, color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  {result.improvements.map((imp, idx) => (
+                    <li key={idx} style={{ lineHeight: '1.5' }}>{imp}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Suggestions Card */}
+            {result.suggestions && result.suggestions.length > 0 && (
+              <div 
+                className="glass-panel" 
+                style={{ 
+                  background: 'rgba(59, 130, 246, 0.05)', 
+                  borderLeft: '4px solid #3b82f6', 
+                  padding: '1.25rem', 
+                  borderRadius: 'var(--radius-md)',
+                  transition: 'transform 0.2s ease, box-shadow 0.2s ease'
+                }}
+              >
+                <h4 style={{ margin: '0 0 0.75rem 0', color: '#3b82f6', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.1rem' }}>
+                  <span style={{ fontSize: '1.2rem' }}>💡</span> Suggestions to Boost Score
+                </h4>
+                <ul style={{ paddingLeft: '1.25rem', margin: 0, color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  {result.suggestions.map((sug, idx) => (
+                    <li key={idx} style={{ lineHeight: '1.5' }}>{sug}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Fallback general feedback (if old data or strings) */}
+            {(!result.strengths || result.strengths.length === 0) && result.feedback && (
+              <div style={{ background: 'var(--bg-base)', padding: '1rem', borderRadius: 'var(--radius-md)' }}>
+                <h4 style={{ marginBottom: '0.5rem', color: 'var(--accent-secondary)' }}>Feedback Summary</h4>
+                <p style={{ margin: 0, lineHeight: '1.5' }}>{result.feedback}</p>
+              </div>
+            )}
           </div>
         </div>
       )}

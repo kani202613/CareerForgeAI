@@ -6,7 +6,10 @@ const resumeSchema = new mongoose.Schema({
   atsScore: { type: Number, default: 0 },
   fileUrl: { type: String },
   extractedSkills: [{ type: String }],
-  feedback: { type: String }
+  feedback: { type: String },
+  strengths: [{ type: String }],
+  improvements: [{ type: String }],
+  suggestions: [{ type: String }]
 }, { timestamps: true });
 
 module.exports = mongoose.model('Resume', resumeSchema);
