@@ -38,4 +38,19 @@ const useAuthStore = create((set) => ({
   }
 }));
 
+// Setup Axios interceptor to handle 401 Unauthorized errors globally
+axios.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      localStorage.removeItem('token');
+      useAuthStore.setState({ user: null, token: null, isAuthenticated: false });
+      if (!window.location.pathname.includes('/login')) {
+        window.location.href = '/login';
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
 export default useAuthStore;
