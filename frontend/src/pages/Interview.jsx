@@ -74,13 +74,26 @@ const Interview = () => {
     }
   };
 
+  // Helper to trigger real-time AI text and spoken responses to user actions
+  const triggerAIReaction = (text) => {
+    setHistory(prev => [...prev, { role: 'assistant', content: text }]);
+    speakText(text);
+  };
+
   // Mute/Unmute microphone
   const toggleMute = () => {
     if (mediaStream) {
       const audioTrack = mediaStream.getAudioTracks()[0];
       if (audioTrack) {
         audioTrack.enabled = !audioTrack.enabled;
-        setMuted(!audioTrack.enabled);
+        const newMuted = !audioTrack.enabled;
+        setMuted(newMuted);
+        
+        if (newMuted) {
+          triggerAIReaction("I notice your microphone is currently muted. Please unmute yourself when you're ready to answer the question.");
+        } else {
+          triggerAIReaction("Thank you. I can hear your microphone feed clearly now.");
+        }
       }
     }
   };
@@ -91,7 +104,14 @@ const Interview = () => {
       const videoTrack = mediaStream.getVideoTracks()[0];
       if (videoTrack) {
         videoTrack.enabled = !videoTrack.enabled;
-        setCameraOn(videoTrack.enabled);
+        const newCameraOn = videoTrack.enabled;
+        setCameraOn(newCameraOn);
+        
+        if (!newCameraOn) {
+          triggerAIReaction("I notice your camera feed is inactive. For a professional assessment experience, I recommend keeping your webcam enabled.");
+        } else {
+          triggerAIReaction("Thank you. Your primary camera feed is back online.");
+        }
       }
     }
   };
@@ -103,6 +123,8 @@ const Interview = () => {
         const stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
         setScreenStream(stream);
         setScreenShare(true);
+        triggerAIReaction("Excellent, I can see your screen sharing stream now. Please walk me through your desktop view.");
+
         // Handle native stop sharing button click in browser
         stream.getVideoTracks()[0].onended = () => {
           handleStopScreenShare(stream);
@@ -121,6 +143,7 @@ const Interview = () => {
     }
     setScreenStream(null);
     setScreenShare(false);
+    triggerAIReaction("You have stopped screen sharing. Restoring your primary camera view.");
   };
 
   // Voice Input (Speech-to-Text transcribing)
