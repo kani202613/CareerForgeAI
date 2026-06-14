@@ -138,12 +138,14 @@ function atsAnalyze(text) {
 
   // --- 2. LAYOUT & FORMATTING CHECKS ---
   let formattingScore = 25;
+  let penaltyScore = 0;
 
   // Check for bullet points in the Projects/Experience sections
   const bulletSymbols = /[•\-*⁃‣○▪▫]/;
   const hasBulletPoints = bulletSymbols.test(text);
   if (!hasBulletPoints && (hasProjects || hasExperience)) {
     formattingScore -= 10;
+    penaltyScore += 15;
     warnings.push("Paragraph format detected instead of list structure. ATS parsers cannot extract details from long paragraphs. Rewrite your experience/projects using short, standard bullet points (•).");
     improvements.push('Experience or Projects sections use paragraph formatting instead of bullet lists.');
   } else {
@@ -153,6 +155,7 @@ function atsAnalyze(text) {
   // Check for "Objective" vs "Summary"
   if (lower.includes('objective')) {
     formattingScore -= 5;
+    penaltyScore += 10;
     warnings.push("Career 'Objective' detected. Objective statements are outdated. Replace your objective with a 2-line targeted Professional Summary reflecting your skills.");
     improvements.push("Resume contains an 'Objective' statement instead of a 'Summary'.");
   }
@@ -164,31 +167,38 @@ function atsAnalyze(text) {
     const hasProjectLinks = projectText.includes('github.com') || projectText.includes('live') || projectText.includes('demo') || projectText.includes('http') || projectText.includes('↗');
     if (!hasProjectLinks) {
       formattingScore -= 5;
+      penaltyScore += 10;
       warnings.push("Missing project repositories or live links. Add GitHub URLs or live demo links (e.g. ↗) to verify your projects.");
       improvements.push('Projects lack verification links (GitHub/Live Demo).');
     }
   }
 
+  // Verify LinkedIn & GitHub link completeness
+  if (!hasLinkedIn && !hasGitHub) {
+    penaltyScore += 10;
+    warnings.push("Missing professional profile links. Modern tech resumes must include active links to LinkedIn and GitHub profiles for recruiter verification.");
+    improvements.push("Missing professional profile links (LinkedIn/GitHub).");
+  }
+
   // Apply non-standard headers penalty
   formattingScore -= (nonStandardHeaderCount * 5);
   formattingScore = Math.max(0, formattingScore);
-
-  let penaltyScore = 0;
+  penaltyScore += (nonStandardHeaderCount * 10);
 
   // Formatting warnings (visual noise, tables, unreadable dates) with strict scoring penalties
   if (/[●○★☆■□]/.test(text) || lower.includes('5/5') || lower.includes('10/10') || /\b\d{2}%\b/.test(text)) {
     warnings.push("Avoid visual skill ratings (e.g. stars, circles, progress bars). ATS scanners read them as garbled characters or visual noise.");
-    penaltyScore += 15;
+    penaltyScore += 20;
   }
 
   if (/\b(spring|summer|fall|winter|autumn)\s+\d{4}\b/i.test(text)) {
     warnings.push("Seasonal dates (e.g. 'Spring 2022') detected. ATS systems cannot calculate work duration from seasons. Use standard month/year format (e.g. '04/2022' or 'April 2022').");
-    penaltyScore += 10;
+    penaltyScore += 15;
   }
 
   if (text.includes('|') || (text.match(/\t{2,}/g) || []).length > 2) {
     warnings.push("Potential table structure or vertical separators (|) detected. Tables and complex multi-column layouts confuse older ATS parsers, merging text in the wrong order.");
-    penaltyScore += 15;
+    penaltyScore += 20;
   }
 
   // --- 3. KEYWORD & SKILLS MATCH ---
@@ -222,6 +232,7 @@ function atsAnalyze(text) {
   });
   if (stuffedKeywords.length > 0) {
     formattingScore -= Math.min(15, stuffedKeywords.length * 5);
+    penaltyScore += Math.min(25, stuffedKeywords.length * 10);
     warnings.push(`Keyword stuffing detected for terms: ${stuffedKeywords.join(', ')}. Repeating keywords excessively to cheat filters is penalized by modern ATS scanners.`);
   }
 
