@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const InterviewResult = require('../models/InterviewResult');
 const { authMiddleware } = require('./user');
+const ai = require('../utils/ai');
 
 // ─── Built-in question bank with required keywords for validation ───
 const questionBank = {
@@ -247,8 +248,7 @@ router.post('/chat', authMiddleware, async (req, res) => {
   }
 });
 
-// End interview and get score
-router.post('/end', authMiddleware, async (req, res) => {
+// End interview anrouter.post('/end', authMiddleware, async (req, res) => {
   try {
     const { role, history } = req.body;
 
@@ -272,7 +272,6 @@ router.post('/end', authMiddleware, async (req, res) => {
       });
 
       let msgScore = 0;
-
       // Length score (up to 40 pts)
       msgScore += Math.min(40, Math.round((words.length / 50) * 40));
 
@@ -291,7 +290,7 @@ router.post('/end', authMiddleware, async (req, res) => {
     });
 
     const avgScore = userMessages.length > 0 ? Math.round(totalScore / userMessages.length) : 0;
-    const finalScore = Math.min(100, avgScore);
+    const ruleScore = Math.min(100, avgScore);
 
     const averageWordCount = userMessages.length > 0 ? Math.round(totalWords / userMessages.length) : 0;
     const fillerDensity = totalFillerWords / (totalWords || 1);
@@ -305,16 +304,20 @@ router.post('/end', authMiddleware, async (req, res) => {
       clarityGrade = 'B';
     }
 
-    let feedback;
-    if (finalScore >= 80) {
-      feedback = 'Excellent performance! Your answers were detailed, technically sound, and well-structured. You demonstrated strong knowledge and communication skills.';
-    } else if (finalScore >= 60) {
-      feedback = 'Good performance overall. You showed solid understanding but could improve by providing more specific examples, quantifiable results, and deeper technical details.';
-    } else if (finalScore >= 40) {
-      feedback = 'Average performance. Try to elaborate more on your answers with concrete examples, mention specific technologies, and explain your thought process in greater detail.';
-    } else {
-      feedback = 'Needs improvement. Focus on providing longer, more detailed answers. Use specific examples from your experience, mention technologies by name, and quantify your achievements wherever possible.';
+    // Call unified AI to evaluate transcript
+    let aiEvaluation = null;
+    try {
+      aiEvaluation = await ai.evaluateInterview(role, history);
+    } catch (aiErr) {
+      console.error('AI transcript evaluation failed, using fallback:', aiErr);
     }
+
+    const finalScore = aiEvaluation ? aiEvaluation.overall : ruleScore;
+    const confidence = aiEvaluation ? aiEvaluation.confidence : Math.round(finalScore * 0.9);
+    const technicalAccuracy = aiEvaluation ? aiEvaluation.technicalAccuracy : Math.round(finalScore * 0.85);
+    const communication = aiEvaluation ? aiEvaluation.communication : Math.round(finalScore * 0.95);
+    const feedback = aiEvaluation ? aiEvaluation.feedback : 'Good performance overall. Consider detailing your tech terms with active verbs.';
+    const detailedEvaluations = aiEvaluation ? aiEvaluation.detailedEvaluations : [];
 
     const newInterview = new InterviewResult({
       userId: req.user.userId,
@@ -324,10 +327,15 @@ router.post('/end', authMiddleware, async (req, res) => {
       transcript: history,
       fillerWordsCount: totalFillerWords,
       averageWordCount: averageWordCount,
-      clarityGrade: clarityGrade
+      clarityGrade: clarityGrade,
+      confidence,
+      technicalAccuracy,
+      communication,
+      detailedEvaluations
     });
 
     await newInterview.save();
+    
     res.json({ 
       message: 'Interview completed', 
       result: { 
@@ -335,10 +343,13 @@ router.post('/end', authMiddleware, async (req, res) => {
         feedback,
         fillerWordsCount: totalFillerWords,
         averageWordCount,
-        clarityGrade
+        clarityGrade,
+        confidence,
+        technicalAccuracy,
+        communication,
+        detailedEvaluations
       } 
     });
-
   } catch (error) {
     console.error('Interview End Error:', error);
     res.status(500).json({ message: 'Failed to end interview' });

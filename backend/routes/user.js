@@ -21,7 +21,8 @@ router.get('/dashboard', authMiddleware, async (req, res) => {
   try {
     const userId = req.user.userId;
     const latestResume = await Resume.findOne({ userId }).sort({ createdAt: -1 });
-    const interviews = await InterviewResult.find({ userId });
+    const resumes = await Resume.find({ userId }).sort({ createdAt: 1 });
+    const interviews = await InterviewResult.find({ userId }).sort({ createdAt: 1 });
     
     let avgInterviewScore = 0;
     if (interviews.length > 0) {
@@ -30,12 +31,31 @@ router.get('/dashboard', authMiddleware, async (req, res) => {
 
     const placementReadiness = Math.round(((latestResume?.resumeScore || 0) + avgInterviewScore) / 2) || 0;
 
+    // Map historical logs for charts
+    const resumeHistory = resumes.map(r => ({
+      date: r.createdAt,
+      score: r.atsScore,
+      overall: r.resumeScore
+    }));
+
+    const interviewHistory = interviews.map(i => ({
+      date: i.createdAt,
+      overall: i.score,
+      confidence: i.confidence || i.score, // fallback
+      technicalAccuracy: i.technicalAccuracy || i.score, // fallback
+      communication: i.communication || i.score // fallback
+    }));
+
     res.json({
       resumeScore: latestResume?.resumeScore || 0,
       atsScore: latestResume?.atsScore || 0,
       interviewScore: Math.round(avgInterviewScore),
       placementReadiness,
-      totalInterviews: interviews.length
+      totalInterviews: interviews.length,
+      resumeHistory,
+      interviewHistory,
+      missingSkills: latestResume?.aiFeedback?.missingSkills || latestResume?.extractedSkills?.slice(0, 4) || [],
+      activeRoadmap: latestResume?.learningRoadmap || []
     });
   } catch (error) {
     console.error(error);

@@ -4,6 +4,7 @@ import useAuthStore from '../store/authStore';
 import { 
   FileText, 
   AlertTriangle, 
+  AlertCircle,
   CheckCircle, 
   Sparkles, 
   HelpCircle, 
@@ -23,6 +24,7 @@ const ResumeUpload = () => {
   const fileInputRef = useRef(null);
   const [selectedLine, setSelectedLine] = useState(null);
   const [activeTab, setActiveTab] = useState('critical'); // 'critical', 'strengths', 'suggestions', 'diagnostics'
+  const [jobDescription, setJobDescription] = useState('');
   const navigate = useNavigate();
 
   const handleUpload = async () => {
@@ -30,6 +32,9 @@ const ResumeUpload = () => {
     setLoading(true);
     const formData = new FormData();
     formData.append('resume', file);
+    if (jobDescription.trim()) {
+      formData.append('jobDescription', jobDescription.trim());
+    }
 
     try {
       const response = await axios.post(
@@ -137,6 +142,33 @@ const ResumeUpload = () => {
             </div>
           </div>
         </div>
+
+        {/* Target Job Description Optional Textarea */}
+        <div className="input-group mb-6">
+          <label className="input-label mb-2" style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
+            Target Job Description (Optional)
+          </label>
+          <textarea
+            className="input-field w-full"
+            placeholder="Paste the target job description (JD) here to match missing keywords, extract required skills, and calculate a strict job-to-resume match percentage..."
+            value={jobDescription}
+            onChange={e => setJobDescription(e.target.value)}
+            rows={4}
+            style={{
+              width: '100%',
+              background: 'rgba(0, 0, 0, 0.2)',
+              border: '1px solid var(--border-subtle)',
+              borderRadius: 'var(--radius-md)',
+              padding: '0.75rem',
+              color: 'var(--text-primary)',
+              fontSize: '0.85rem',
+              fontFamily: 'inherit',
+              resize: 'vertical',
+              outline: 'none'
+            }}
+          />
+        </div>
+
         <button 
           className="btn btn-primary w-full" 
           onClick={handleUpload} 
@@ -340,7 +372,7 @@ const ResumeUpload = () => {
               
               <div className="glass-panel" style={{ minHeight: '480px' }}>
                 {/* Tab header buttons */}
-                <div className="tab-container">
+                <div className="tab-container" style={{ flexWrap: 'wrap', gap: '0.25rem' }}>
                   {result.warnings?.length > 0 && (
                     <button 
                       onClick={() => setActiveTab('critical')}
@@ -353,7 +385,7 @@ const ResumeUpload = () => {
                     onClick={() => setActiveTab('strengths')}
                     className={`tab-btn ${activeTab === 'strengths' ? 'active' : ''}`}
                   >
-                    Strengths ({result.strengths?.length || 0})
+                    Strengths ({result.aiFeedback?.strengths?.length || result.strengths?.length || 0})
                   </button>
                   <button 
                     onClick={() => setActiveTab('suggestions')}
@@ -361,6 +393,22 @@ const ResumeUpload = () => {
                   >
                     Rewrite Checklist
                   </button>
+                  {result.learningRoadmap?.length > 0 && (
+                    <button 
+                      onClick={() => setActiveTab('roadmap')}
+                      className={`tab-btn ${activeTab === 'roadmap' ? 'active' : ''}`}
+                    >
+                      AI Coach Roadmap
+                    </button>
+                  )}
+                  {result.jdMatch && result.jdMatch.matchPercentage !== null && (
+                    <button 
+                      onClick={() => setActiveTab('jdmatch')}
+                      className={`tab-btn ${activeTab === 'jdmatch' ? 'active' : ''}`}
+                    >
+                      JD Match
+                    </button>
+                  )}
                   {selectedLine && (
                     <button 
                       onClick={() => setActiveTab('diagnostics')}
@@ -414,7 +462,7 @@ const ResumeUpload = () => {
                 {activeTab === 'strengths' && (
                   <div className="flex-col gap-4 animate-fade-in">
                     <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                      {result.strengths?.map((s, idx) => (
+                      {(result.aiFeedback?.strengths || result.strengths)?.map((s, idx) => (
                         <li key={idx} style={{
                           display: 'flex',
                           alignItems: 'flex-start',
@@ -430,7 +478,7 @@ const ResumeUpload = () => {
                           </span>
                         </li>
                       ))}
-                      {(!result.strengths || result.strengths.length === 0) && (
+                      {(!(result.aiFeedback?.strengths || result.strengths) || (result.aiFeedback?.strengths || result.strengths).length === 0) && (
                         <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', textAlign: 'center', marginTop: '2rem' }}>
                           No explicit layout strengths identified. Fix parser warning flags to reveal strengths.
                         </p>
@@ -442,24 +490,167 @@ const ResumeUpload = () => {
                 {/* Tab Content 3: Rewrite Checklist */}
                 {activeTab === 'suggestions' && (
                   <div className="flex-col gap-4 animate-fade-in">
-                    <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                      {(result.suggestions || result.improvements)?.map((item, idx) => (
-                        <li key={idx} style={{
-                          display: 'flex',
-                          alignItems: 'flex-start',
-                          gap: '0.75rem',
-                          background: 'rgba(255, 255, 255, 0.01)',
-                          border: '1px solid var(--border-subtle)',
-                          padding: '1rem',
-                          borderRadius: 'var(--radius-md)'
-                        }}>
-                          <ChevronRight size={16} color="var(--accent-primary)" style={{ marginTop: '0.15rem', flexShrink: 0 }} />
-                          <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-                            {item}
-                          </span>
-                        </li>
+                    {result.aiFeedback ? (
+                      <div className="flex-col gap-6">
+                        {/* AI Weaknesses */}
+                        {result.aiFeedback.weaknesses?.length > 0 && (
+                          <div className="flex-col gap-2">
+                            <h5 style={{ fontSize: '0.8rem', color: 'var(--accent-secondary)', fontWeight: 600, textTransform: 'uppercase', margin: 0, letterSpacing: '0.05em' }}>Identified Gaps</h5>
+                            <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                              {result.aiFeedback.weaknesses.map((w, idx) => (
+                                <li key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', background: 'rgba(239, 68, 68, 0.02)', border: '1px solid rgba(239, 68, 68, 0.08)', padding: '0.75rem', borderRadius: 'var(--radius-md)' }}>
+                                  <AlertCircle size={14} color="#ef4444" style={{ marginTop: '0.15rem', flexShrink: 0 }} />
+                                  <span style={{ fontSize: '0.825rem', color: 'var(--text-secondary)', lineHeight: 1.4 }}>{w}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+
+                        {/* AI Suggestions */}
+                        {result.aiFeedback.suggestions?.length > 0 && (
+                          <div className="flex-col gap-2">
+                            <h5 style={{ fontSize: '0.8rem', color: 'var(--accent-primary)', fontWeight: 600, textTransform: 'uppercase', margin: 0, letterSpacing: '0.05em' }}>ATS Suggestions</h5>
+                            <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                              {result.aiFeedback.suggestions.map((s, idx) => (
+                                <li key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', background: 'rgba(255, 255, 255, 0.01)', border: '1px solid var(--border-subtle)', padding: '0.75rem', borderRadius: 'var(--radius-md)' }}>
+                                  <ChevronRight size={14} color="var(--accent-primary)" style={{ marginTop: '0.15rem', flexShrink: 0 }} />
+                                  <span style={{ fontSize: '0.825rem', color: 'var(--text-secondary)', lineHeight: 1.4 }}>{s}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+
+                        {/* AI Improvement Plan */}
+                        {result.aiFeedback.improvementPlan?.length > 0 && (
+                          <div className="flex-col gap-2">
+                            <h5 style={{ fontSize: '0.8rem', color: 'var(--accent-tertiary)', fontWeight: 600, textTransform: 'uppercase', margin: 0, letterSpacing: '0.05em' }}>Action Plan</h5>
+                            <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                              {result.aiFeedback.improvementPlan.map((p, idx) => (
+                                <li key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', background: 'rgba(16, 185, 129, 0.02)', border: '1px solid rgba(16, 185, 129, 0.08)', padding: '0.75rem', borderRadius: 'var(--radius-md)' }}>
+                                  <CheckCircle size={14} color="var(--accent-tertiary)" style={{ marginTop: '0.15rem', flexShrink: 0 }} />
+                                  <span style={{ fontSize: '0.825rem', color: 'var(--text-secondary)', lineHeight: 1.4 }}>{p}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                        {(result.suggestions || result.improvements)?.map((item, idx) => (
+                          <li key={idx} style={{
+                            display: 'flex',
+                            alignItems: 'flex-start',
+                            gap: '0.75rem',
+                            background: 'rgba(255, 255, 255, 0.01)',
+                            border: '1px solid var(--border-subtle)',
+                            padding: '1rem',
+                            borderRadius: 'var(--radius-md)'
+                          }}>
+                            <ChevronRight size={16} color="var(--accent-primary)" style={{ marginTop: '0.15rem', flexShrink: 0 }} />
+                            <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                              {item}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                )}
+
+                {/* Tab Content 5: AI Coach Roadmap */}
+                {activeTab === 'roadmap' && result.learningRoadmap && (
+                  <div className="flex-col gap-6 animate-fade-in">
+                    <div style={{
+                      background: 'rgba(99, 102, 241, 0.05)',
+                      border: '1px solid rgba(99, 102, 241, 0.15)',
+                      padding: '1rem',
+                      borderRadius: 'var(--radius-md)',
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      gap: '0.75rem'
+                    }}>
+                      <Sparkles size={18} color="var(--accent-primary)" style={{ marginTop: '0.15rem', flexShrink: 0 }} />
+                      <p style={{ margin: 0, fontSize: '0.825rem', color: 'var(--text-secondary)', lineHeight: '1.4' }}>
+                        Personalized week-by-week learning roadmap designed by the AI career coach to close your skill gaps.
+                      </p>
+                    </div>
+
+                    <div className="flex-col" style={{ gap: '1.5rem', position: 'relative', paddingLeft: '1.5rem', borderLeft: '2px dashed var(--border-subtle)', marginLeft: '0.5rem', paddingBottom: '0.5rem' }}>
+                      {result.learningRoadmap.map((item, idx) => (
+                        <div key={idx} style={{ position: 'relative' }}>
+                          <span style={{
+                            position: 'absolute',
+                            left: '-1.95rem',
+                            top: '0.2rem',
+                            width: '12px',
+                            height: '12px',
+                            borderRadius: '50%',
+                            background: 'var(--accent-primary)',
+                            border: '3px solid var(--bg-surface)'
+                          }} />
+                          <h5 style={{ fontSize: '0.9rem', color: 'var(--text-primary)', fontWeight: 700, margin: '0 0 0.25rem 0' }}>
+                            {item.week}
+                          </h5>
+                          <h6 style={{ fontSize: '0.825rem', color: 'var(--accent-secondary)', fontWeight: 600, margin: '0 0 0.5rem 0' }}>
+                            {item.topic}
+                          </h6>
+                          <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.5 }}>
+                            {item.description}
+                          </p>
+                        </div>
                       ))}
-                    </ul>
+                    </div>
+                  </div>
+                )}
+
+                {/* Tab Content 6: JD Match Analysis */}
+                {activeTab === 'jdmatch' && result.jdMatch && (
+                  <div className="flex-col gap-6 animate-fade-in">
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255, 255, 255, 0.01)', border: '1px solid var(--border-subtle)', padding: '1.25rem', borderRadius: 'var(--radius-md)' }}>
+                      <div>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>JD Match Rate</span>
+                        <h4 style={{ fontSize: '2.25rem', fontWeight: 800, margin: '0.15rem 0 0 0', color: result.jdMatch.matchPercentage >= 70 ? 'var(--accent-tertiary)' : 'var(--accent-secondary)' }}>
+                          {result.jdMatch.matchPercentage}%
+                        </h4>
+                      </div>
+                      <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', textAlign: 'right', maxWidth: '180px', lineHeight: 1.4 }}>
+                        {result.jdMatch.matchPercentage >= 70 
+                          ? 'Strong profile alignment with this job description!' 
+                          : 'Moderate alignment. Try targeting missing keywords below.'}
+                      </div>
+                    </div>
+
+                    {/* Missing Keywords */}
+                    {result.jdMatch.missingKeywords?.length > 0 && (
+                      <div className="flex-col gap-2">
+                        <h5 style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600, textTransform: 'uppercase', margin: 0 }}>Missing Keywords</h5>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                          {result.jdMatch.missingKeywords.map(kw => (
+                            <span key={kw} style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#f87171', border: '1px solid rgba(239, 68, 68, 0.15)', padding: '0.25rem 0.65rem', borderRadius: '0.5rem', fontSize: '0.775rem', fontWeight: 600 }}>
+                              {kw}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Recommended Improvements */}
+                    {result.jdMatch.recommendedImprovements?.length > 0 && (
+                      <div className="flex-col gap-2">
+                        <h5 style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600, textTransform: 'uppercase', margin: 0 }}>Target Recommendations</h5>
+                        <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                          {result.jdMatch.recommendedImprovements.map((imp, idx) => (
+                            <li key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', background: 'rgba(255, 255, 255, 0.01)', border: '1px solid var(--border-subtle)', padding: '0.75rem', borderRadius: 'var(--radius-md)' }}>
+                              <ChevronRight size={14} color="var(--accent-secondary)" style={{ marginTop: '0.15rem', flexShrink: 0 }} />
+                              <span style={{ fontSize: '0.825rem', color: 'var(--text-secondary)', lineHeight: 1.4 }}>{imp}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
                   </div>
                 )}
 

@@ -8,7 +8,19 @@ const interviewSchema = new mongoose.Schema({
   transcript: [{ role: String, content: String }],
   fillerWordsCount: { type: Number, default: 0 },
   averageWordCount: { type: Number, default: 0 },
-  clarityGrade: { type: String, default: 'B' }
+  clarityGrade: { type: String, default: 'B' },
+  confidence: { type: Number, default: 0 },
+  technicalAccuracy: { type: Number, default: 0 },
+  communication: { type: Number, default: 0 },
+  detailedEvaluations: [{
+    question: { type: String },
+    answer: { type: String },
+    confidence: { type: Number },
+    technicalAccuracy: { type: Number },
+    communication: { type: Number },
+    overall: { type: Number },
+    feedback: { type: String }
+  }]
 }, { timestamps: true });
 
 module.exports = mongoose.model('InterviewResult', interviewSchema);

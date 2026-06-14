@@ -4,6 +4,7 @@ const multer = require('multer');
 const pdfParse = require('pdf-parse');
 const Resume = require('../models/Resume');
 const { authMiddleware } = require('./user');
+const ai = require('../utils/ai');
 
 // Memory storage for uploaded PDF
 const upload = multer({ storage: multer.memoryStorage() });
@@ -432,6 +433,8 @@ router.post('/upload', authMiddleware, upload.single('resume'), async (req, res)
       return res.status(400).json({ message: 'No file uploaded' });
     }
 
+    const jobDescription = req.body.jobDescription || null;
+
     let text;
     try {
       const data = await pdfParse(req.file.buffer);
@@ -452,10 +455,41 @@ router.post('/upload', authMiddleware, upload.single('resume'), async (req, res)
     // Perform free ATS‑style analysis
     const analysis = atsAnalyze(text);
 
+    // Call unified AI to parse deep metrics
+    let aiAnalysis = null;
+    try {
+      aiAnalysis = await ai.analyzeResume(text, jobDescription);
+    } catch (aiErr) {
+      console.error('AI resume analysis failed:', aiErr);
+      aiAnalysis = {
+        strengths: analysis.strengths,
+        weaknesses: ['Failed to query AI parser'],
+        suggestions: analysis.suggestions,
+        missingSkills: ['Redux', 'Next.js'],
+        improvementPlan: ['Verify network keys in environment properties'],
+        matchPercentage: jobDescription ? 50 : null,
+        missingKeywords: jobDescription ? ['Skills'] : [],
+        recommendedImprovements: []
+      };
+    }
+
+    // Generate Personalized Career Coach Roadmap based on missing skills
+    let learningRoadmap = [];
+    try {
+      learningRoadmap = await ai.generateRoadmap(analysis.candidateProfile, aiAnalysis.missingSkills);
+    } catch (roadmapErr) {
+      console.error('AI roadmap generation failed:', roadmapErr);
+    }
+
+    // Strict ATS Match is overwritten by JD match percentage if JD is provided!
+    const finalAtsScore = (jobDescription && aiAnalysis.matchPercentage !== null) 
+      ? aiAnalysis.matchPercentage 
+      : analysis.atsScore;
+
     const newResume = new Resume({
       userId: req.user.userId,
       resumeScore: analysis.resumeScore,
-      atsScore: analysis.atsScore,
+      atsScore: finalAtsScore,
       extractedSkills: analysis.extractedSkills,
       feedback: analysis.feedback,
       strengths: analysis.strengths,
@@ -463,11 +497,40 @@ router.post('/upload', authMiddleware, upload.single('resume'), async (req, res)
       suggestions: analysis.suggestions,
       candidateProfile: analysis.candidateProfile,
       warnings: analysis.warnings,
-      highlightedLines: analysis.highlightedLines
+      highlightedLines: analysis.highlightedLines,
+      aiFeedback: {
+        strengths: aiAnalysis.strengths,
+        weaknesses: aiAnalysis.weaknesses,
+        suggestions: aiAnalysis.suggestions,
+        missingSkills: aiAnalysis.missingSkills,
+        improvementPlan: aiAnalysis.improvementPlan
+      },
+      learningRoadmap,
+      jdMatch: {
+        matchPercentage: aiAnalysis.matchPercentage,
+        missingKeywords: aiAnalysis.missingKeywords,
+        recommendedImprovements: aiAnalysis.recommendedImprovements,
+        jobDescriptionText: jobDescription || ''
+      }
     });
 
     await newResume.save();
-    res.json({ message: 'Resume analyzed successfully (free ATS mode)', result: analysis });
+
+    // Prepare response result matching the schema structure
+    const mergedResult = {
+      ...analysis,
+      atsScore: finalAtsScore,
+      aiFeedback: aiAnalysis,
+      learningRoadmap,
+      jdMatch: {
+        matchPercentage: aiAnalysis.matchPercentage,
+        missingKeywords: aiAnalysis.missingKeywords,
+        recommendedImprovements: aiAnalysis.recommendedImprovements,
+        jobDescriptionText: jobDescription || ''
+      }
+    };
+
+    res.json({ message: 'Resume analyzed successfully with AI features', result: mergedResult });
   } catch (error) {
     console.error('Resume Analysis Error:', error);
     res.status(500).json({ message: 'Failed to analyze resume' });

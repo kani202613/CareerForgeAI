@@ -308,7 +308,11 @@ const Interview = () => {
           transcript: history,
           fillerWordsCount: response.data.result.fillerWordsCount,
           averageWordCount: response.data.result.averageWordCount,
-          clarityGrade: response.data.result.clarityGrade
+          clarityGrade: response.data.result.clarityGrade,
+          confidence: response.data.result.confidence,
+          technicalAccuracy: response.data.result.technicalAccuracy,
+          communication: response.data.result.communication,
+          detailedEvaluations: response.data.result.detailedEvaluations
         }
       });
     } catch (error) {

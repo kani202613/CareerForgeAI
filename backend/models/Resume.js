@@ -16,7 +16,25 @@ const resumeSchema = new mongoose.Schema({
     text: { type: String },
     status: { type: String },
     reason: { type: String }
-  }]
+  }],
+  aiFeedback: {
+    strengths: [{ type: String }],
+    weaknesses: [{ type: String }],
+    suggestions: [{ type: String }],
+    missingSkills: [{ type: String }],
+    improvementPlan: [{ type: String }]
+  },
+  learningRoadmap: [{
+    week: { type: String },
+    topic: { type: String },
+    description: { type: String }
+  }],
+  jdMatch: {
+    matchPercentage: { type: Number },
+    missingKeywords: [{ type: String }],
+    recommendedImprovements: [{ type: String }],
+    jobDescriptionText: { type: String }
+  }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Resume', resumeSchema);

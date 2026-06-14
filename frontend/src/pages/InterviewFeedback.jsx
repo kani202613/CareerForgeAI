@@ -16,7 +16,19 @@ import {
 const InterviewFeedback = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { score, feedback, role, transcript, fillerWordsCount, averageWordCount, clarityGrade } = location.state || {};
+  const { 
+    score, 
+    feedback, 
+    role, 
+    transcript, 
+    fillerWordsCount, 
+    averageWordCount, 
+    clarityGrade,
+    confidence,
+    technicalAccuracy,
+    communication,
+    detailedEvaluations
+  } = location.state || {};
 
   // Redirect if no direct call state logs exist
   if (!score && score !== 0) {
@@ -145,6 +157,47 @@ const InterviewFeedback = () => {
               <Sparkles size={14} />
               <span>GRADE {grade} • {gradeLabel}</span>
             </div>
+          </div>          {/* AI Evaluated Dimensions */}
+          <div className="glass-panel flex-col gap-4">
+            <h3 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Sparkles size={16} color="var(--accent-primary)" />
+              <span>AI Evaluation Dimensions</span>
+            </h3>
+
+            <div className="flex-col gap-3">
+              {/* Technical Accuracy */}
+              <div>
+                <div className="flex justify-between items-center" style={{ marginBottom: '0.25rem' }}>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>TECHNICAL ACCURACY</span>
+                  <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--accent-secondary)' }}>{technicalAccuracy || 0}%</span>
+                </div>
+                <div style={{ width: '100%', height: '6px', background: 'rgba(255,255,255,0.05)', borderRadius: '3px', overflow: 'hidden' }}>
+                  <div style={{ width: `${technicalAccuracy || 0}%`, height: '100%', background: 'var(--accent-secondary)', borderRadius: '3px' }} />
+                </div>
+              </div>
+
+              {/* Communication structure */}
+              <div>
+                <div className="flex justify-between items-center" style={{ marginBottom: '0.25rem' }}>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>COMMUNICATION DEPTH</span>
+                  <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--accent-primary)' }}>{communication || 0}%</span>
+                </div>
+                <div style={{ width: '100%', height: '6px', background: 'rgba(255,255,255,0.05)', borderRadius: '3px', overflow: 'hidden' }}>
+                  <div style={{ width: `${communication || 0}%`, height: '100%', background: 'var(--accent-primary)', borderRadius: '3px' }} />
+                </div>
+              </div>
+
+              {/* Confidence pacing */}
+              <div>
+                <div className="flex justify-between items-center" style={{ marginBottom: '0.25rem' }}>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>CONFIDENCE & PACING</span>
+                  <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--accent-tertiary)' }}>{confidence || 0}%</span>
+                </div>
+                <div style={{ width: '100%', height: '6px', background: 'rgba(255,255,255,0.05)', borderRadius: '3px', overflow: 'hidden' }}>
+                  <div style={{ width: `${confidence || 0}%`, height: '100%', background: 'var(--accent-tertiary)', borderRadius: '3px' }} />
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Speech analytics stats */}
@@ -198,9 +251,7 @@ const InterviewFeedback = () => {
                 {(averageWordCount || 0) < 35 ? '⚠️ Short answers detected. Expand technical details.' : '✓ Balanced detail and content depth.'}
               </p>
             </div>
-
           </div>
-
         </div>
 
         {/* Right Side: Feedback narrative and suggestions checklist */}
@@ -325,6 +376,53 @@ const InterviewFeedback = () => {
           })}
         </div>
       </div>
+
+      {/* AI Detailed Q&A Audit */}
+      {detailedEvaluations && detailedEvaluations.length > 0 && (
+        <div className="glass-panel flex-col gap-4">
+          <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '0.5rem', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '0.75rem', margin: 0 }}>
+            <Sparkles size={16} color="var(--accent-tertiary)" />
+            <span>AI Question-by-Question Audit</span>
+          </h3>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            {detailedEvaluations.map((item, idx) => (
+              <div key={idx} style={{ background: 'rgba(255, 255, 255, 0.01)', border: '1px solid var(--border-subtle)', padding: '1.25rem', borderRadius: 'var(--radius-lg)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem', borderBottom: '1px solid rgba(255, 255, 255, 0.03)', paddingBottom: '0.5rem' }}>
+                  <strong style={{ fontSize: '0.85rem', color: 'var(--accent-primary)' }}>Q{idx + 1}: Technical assessment</strong>
+                  <span style={{ fontSize: '0.8rem', fontWeight: 700, background: 'rgba(99, 102, 241, 0.1)', color: 'var(--accent-primary)', padding: '0.2rem 0.65rem', borderRadius: '0.5rem' }}>
+                    Score: {item.overall || 0}%
+                  </span>
+                </div>
+                <p style={{ margin: '0 0 0.75rem 0', fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-primary)' }}>"{item.question}"</p>
+                <div style={{ background: 'rgba(0, 0, 0, 0.2)', padding: '0.75rem 1rem', borderRadius: 'var(--radius-md)', marginBottom: '0.75rem', fontSize: '0.825rem', color: 'var(--text-secondary)', fontStyle: 'italic' }}>
+                  "{item.answer}"
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '0.75rem', marginTop: '0.75rem' }}>
+                  <div style={{ fontSize: '0.75rem' }}>
+                    <span style={{ color: 'var(--text-muted)', display: 'block' }}>Accuracy</span>
+                    <strong style={{ color: 'var(--accent-secondary)' }}>{item.technicalAccuracy || 0}%</strong>
+                  </div>
+                  <div style={{ fontSize: '0.75rem' }}>
+                    <span style={{ color: 'var(--text-muted)', display: 'block' }}>Communication</span>
+                    <strong style={{ color: 'var(--accent-primary)' }}>{item.communication || 0}%</strong>
+                  </div>
+                  <div style={{ fontSize: '0.75rem' }}>
+                    <span style={{ color: 'var(--text-muted)', display: 'block' }}>Confidence</span>
+                    <strong style={{ color: 'var(--accent-tertiary)' }}>{item.confidence || 0}%</strong>
+                  </div>
+                </div>
+
+                <div style={{ marginTop: '0.75rem', padding: '0.75rem', background: 'rgba(99, 102, 241, 0.03)', borderRadius: 'var(--radius-md)', fontSize: '0.8rem', color: 'var(--text-secondary)', borderLeft: '3px solid var(--accent-primary)' }}>
+                  <strong>AI Feedback: </strong> {item.feedback}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
 
       {/* Bottom Action buttons */}
       <div className="flex gap-4" style={{ justifyContent: 'center', paddingBottom: '2.5rem' }}>
