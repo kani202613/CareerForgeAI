@@ -3,67 +3,132 @@ const router = express.Router();
 const InterviewResult = require('../models/InterviewResult');
 const { authMiddleware } = require('./user');
 
-// ─── Built-in question bank (no external AI needed) ───
+// ─── Built-in question bank with required keywords for validation ───
 const questionBank = {
   'Frontend Developer': [
-    'What is the difference between let, const, and var in JavaScript?',
-    'Explain the Virtual DOM in React and why it improves performance.',
-    'How do you handle state management in a large React application?',
-    'What are CSS Flexbox and Grid? When would you use each?',
-    'Explain event delegation in JavaScript.',
-    'What is the difference between server-side rendering and client-side rendering?',
-    'How do you optimize the performance of a web application?',
-    'What are Web Accessibility (a11y) best practices you follow?',
-    'Explain the concept of closures in JavaScript with an example.',
-    'How do you handle cross-browser compatibility issues?'
+    {
+      question: 'What is the difference between let, const, and var in JavaScript?',
+      keywords: ['scope', 'hoist', 'reassign', 'var', 'let', 'const', 'block'],
+      hint: 'scope, hoisting, or block level reassignability'
+    },
+    {
+      question: 'Explain the Virtual DOM in React and why it improves performance.',
+      keywords: ['virtual dom', 'diff', 'reconciliation', 'render', 'dom', 'update'],
+      hint: 'the reconciliation process or DOM diffing'
+    },
+    {
+      question: 'How do you handle state management in a large React application?',
+      keywords: ['redux', 'context', 'state', 'usestate', 'props', 'store', 'reducer'],
+      hint: 'state management tools like Redux, Context API, or hooks'
+    },
+    {
+      question: 'What are CSS Flexbox and Grid? When would you use each?',
+      keywords: ['flex', 'grid', 'layout', 'axis', 'dimension', 'align', 'column'],
+      hint: 'flexbox axes, grid layout systems, or dimensions'
+    },
+    {
+      question: 'Explain event delegation in JavaScript.',
+      keywords: ['event', 'bubble', 'listener', 'parent', 'target', 'propagation'],
+      hint: 'event bubbling and target listeners'
+    }
   ],
   'Backend Developer': [
-    'What is the difference between SQL and NoSQL databases? When would you use each?',
-    'Explain RESTful API design principles.',
-    'How do you handle authentication and authorization in a backend system?',
-    'What is middleware in Express.js? Give an example.',
-    'Explain the concept of database indexing and its impact on performance.',
-    'How would you design a rate limiter for an API?',
-    'What are microservices? How do they differ from monolithic architecture?',
-    'Explain the difference between horizontal and vertical scaling.',
-    'How do you handle error handling and logging in a production Node.js app?',
-    'What is caching and how would you implement it in a backend system?'
+    {
+      question: 'What is the difference between SQL and NoSQL databases? When would you use each?',
+      keywords: ['sql', 'nosql', 'relational', 'schema', 'document', 'table', 'scaling'],
+      hint: 'schemas, tables, or relational scaling'
+    },
+    {
+      question: 'Explain RESTful API design principles.',
+      keywords: ['rest', 'api', 'http', 'endpoint', 'stateless', 'method', 'get', 'post'],
+      hint: 'stateless communication or standard HTTP methods'
+    },
+    {
+      question: 'How do you handle authentication and authorization in a backend system?',
+      keywords: ['auth', 'jwt', 'token', 'session', 'permission', 'role', 'hash', 'bcrypt'],
+      hint: 'JWT tokens, session storage, or hashing'
+    },
+    {
+      question: 'What is middleware in Express.js? Give an example.',
+      keywords: ['middleware', 'express', 'request', 'response', 'next', 'function'],
+      hint: 'request-response lifecycle functions or the next() call'
+    },
+    {
+      question: 'Explain the concept of database indexing and its impact on performance.',
+      keywords: ['index', 'query', 'search', 'performance', 'slow', 'b-tree', 'scan'],
+      hint: 'query performance, scans, or B-Trees'
+    }
   ],
   'Full Stack Developer': [
-    'Walk me through how a request flows from a browser to the database and back.',
-    'How do you decide what logic goes on the frontend vs backend?',
-    'Explain how JWT authentication works end-to-end.',
-    'What tools do you use for CI/CD and why?',
-    'How do you handle environment variables across development and production?',
-    'Describe a challenging bug you fixed that involved both frontend and backend.',
-    'How would you design a real-time notification system?',
-    'What is your approach to database schema design?',
-    'How do you ensure security in a full stack application?',
-    'What testing strategies do you use across the stack?'
+    {
+      question: 'Walk me through how a request flows from a browser to the database and back.',
+      keywords: ['request', 'browser', 'server', 'database', 'dns', 'http', 'api', 'response'],
+      hint: 'DNS resolution, HTTP requests, or DB queries'
+    },
+    {
+      question: 'How do you decide what logic goes on the frontend vs backend?',
+      keywords: ['client', 'server', 'security', 'validation', 'database', 'render'],
+      hint: 'security concerns, client rendering, or data validation'
+    },
+    {
+      question: 'Explain how JWT authentication works end-to-end.',
+      keywords: ['jwt', 'token', 'signature', 'header', 'payload', 'secret', 'verify'],
+      hint: 'payload verification, signatures, or token headers'
+    },
+    {
+      question: 'What tools do you use for CI/CD and why?',
+      keywords: ['git', 'jenkins', 'github', 'actions', 'pipeline', 'deploy', 'docker'],
+      hint: 'pipelines, GitHub Actions, Docker, or deployments'
+    },
+    {
+      question: 'How do you handle environment variables across development and production?',
+      keywords: ['env', 'process.env', 'config', 'secret', 'production', 'variables'],
+      hint: '.env configs, production secrets, or environment variables'
+    }
   ],
   'Data Scientist': [
-    'Explain the bias-variance tradeoff.',
-    'What is the difference between supervised and unsupervised learning?',
-    'How do you handle missing data in a dataset?',
-    'Explain cross-validation and why it is important.',
-    'What evaluation metrics would you use for a classification problem?',
-    'How do you handle imbalanced datasets?',
-    'Explain the difference between bagging and boosting.',
-    'What is feature engineering and why is it important?',
-    'How would you deploy a machine learning model into production?',
-    'Explain the difference between precision and recall.'
+    {
+      question: 'Explain the bias-variance tradeoff.',
+      keywords: ['bias', 'variance', 'overfit', 'underfit', 'tradeoff', 'error'],
+      hint: 'model overfitting, underfitting, or prediction errors'
+    },
+    {
+      question: 'What is the difference between supervised and unsupervised learning?',
+      keywords: ['label', 'supervised', 'unsupervised', 'cluster', 'classify', 'train'],
+      hint: 'labeled datasets, clustering, or classifications'
+    },
+    {
+      question: 'How do you handle missing data in a dataset?',
+      keywords: ['missing', 'impute', 'mean', 'median', 'drop', 'null', 'nan'],
+      hint: 'data imputation (mean/median) or dropping Null fields'
+    },
+    {
+      question: 'Explain cross-validation and why it is important.',
+      keywords: ['cross', 'validation', 'fold', 'overfit', 'train', 'test', 'split'],
+      hint: 'K-folds split, training validation, or overfitting prevention'
+    }
   ],
   'default': [
-    'Tell me about yourself and your background.',
-    'What are your greatest technical strengths?',
-    'Describe a challenging project you worked on recently.',
-    'How do you stay up to date with the latest technology trends?',
-    'Tell me about a time you had to learn a new technology quickly.',
-    'How do you approach debugging a complex problem?',
-    'Describe your experience working in a team.',
-    'What is your approach to writing clean and maintainable code?',
-    'How do you prioritize tasks when working on multiple projects?',
-    'Where do you see yourself in 5 years?'
+    {
+      question: 'Tell me about yourself and your background.',
+      keywords: ['experience', 'projects', 'skills', 'developer', 'career', 'study', 'interest'],
+      hint: 'your programming projects, studies, or career history'
+    },
+    {
+      question: 'What are your greatest technical strengths?',
+      keywords: ['strength', 'programming', 'languages', 'solve', 'skills', 'architecture'],
+      hint: 'problem solving, languages, or software design strengths'
+    },
+    {
+      question: 'Describe a challenging project you worked on recently.',
+      keywords: ['project', 'challenge', 'built', 'solved', 'architecture', 'problem'],
+      hint: 'engineering difficulties, features built, or solutions found'
+    },
+    {
+      question: 'How do you stay up to date with the latest technology trends?',
+      keywords: ['learn', 'blog', 'news', 'article', 'tech', 'follow', 'github', 'reading'],
+      hint: 'articles, blogs, GitHub, or documentation resources'
+    }
   ]
 };
 
@@ -71,7 +136,6 @@ function getQuestions(role) {
   return questionBank[role] || questionBank['default'];
 }
 
-// ─── Recruiter-mode follow-ups ───
 const recruiterFollowUps = [
   'Can you quantify the impact of that work? Give me specific numbers.',
   'What trade-offs did you consider and why did you choose that approach?',
@@ -93,36 +157,72 @@ router.post('/chat', authMiddleware, async (req, res) => {
       messages.push({ role: 'user', content: newMessage });
     }
 
-    // Determine which question to ask next
     const questions = getQuestions(role);
-    
-    // Find already asked standard questions from history
-    const askedQuestions = messages
-      .filter(m => m.role === 'assistant')
-      .map(m => m.content);
+    const assistantMessages = messages.filter(m => m.role === 'assistant');
+    const askedQuestionsText = assistantMessages.map(m => m.content);
 
-    // Filter questions that are present in the question bank but haven't been asked yet
-    const remainingQuestions = questions.filter(q => !askedQuestions.includes(q));
-    const standardAskedCount = questions.filter(q => askedQuestions.includes(q)).length;
-    
-    const assistantCount = messages.filter(m => m.role === 'assistant').length;
+    let aiResponse = null;
+    let isFollowUpPrompt = false;
 
-    let aiResponse;
+    // --- ANSWER VALIDATION LOGIC ---
+    if (newMessage && assistantMessages.length > 0) {
+      const lastQText = assistantMessages[assistantMessages.length - 1].content;
+      
+      // Determine if the last question was an elaboration prompt
+      const wasElaborationRequest = lastQText.includes("I notice you didn't quite cover") || lastQText.includes("Could you elaborate");
 
-    if (standardAskedCount >= questions.length) {
-      // All questions from bank asked
-      aiResponse = 'Great, that concludes our interview! Click "End Interview" to see your evaluation and score.';
-    } else if (recruiterMode && assistantCount > 0 && assistantCount % 2 === 1) {
-      // In recruiter mode, every other response is a tough follow-up
-      const idx = Math.floor(Math.random() * recruiterFollowUps.length);
-      aiResponse = recruiterFollowUps[idx];
-    } else {
-      // Ask a random unasked question from the bank
-      if (remainingQuestions.length > 0) {
-        const idx = Math.floor(Math.random() * remainingQuestions.length);
-        aiResponse = remainingQuestions[idx];
+      // Find which standard question in the bank corresponds to this discussion
+      const matchedQuestionObj = questions.find(q => 
+        q.question === lastQText || 
+        (wasElaborationRequest && lastQText.includes(q.keywords[0]))
+      );
+
+      // If we found the question, and we haven't already asked them to elaborate on it
+      if (matchedQuestionObj && !wasElaborationRequest) {
+        const textLower = newMessage.toLowerCase();
+        const words = textLower.split(/\s+/).filter(Boolean);
+
+        // Escape and match keywords safely
+        const matchedKeywords = matchedQuestionObj.keywords.filter(k => {
+          const escaped = k.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+          const regex = new RegExp(`(?<![a-zA-Z0-9])${escaped}(?![a-zA-Z0-9])`, 'i');
+          return regex.test(textLower);
+        });
+
+        // Trigger follow-up if answer is empty, too short, or lacks required keywords
+        if (matchedKeywords.length === 0 || words.length < 5) {
+          isFollowUpPrompt = true;
+          aiResponse = `I notice you didn't quite cover key concepts (like ${matchedQuestionObj.hint}) in your response. Could you elaborate on this for the ${role} position?`;
+        }
+      }
+    }
+
+    // If it isn't a follow-up request, fetch the next question from the bank
+    if (!aiResponse) {
+      // Find standard questions that haven't been asked yet
+      const remainingQuestions = questions.filter(q => 
+        !askedQuestionsText.some(asked => asked.includes(q.question))
+      );
+
+      const standardAskedCount = questions.filter(q => 
+        askedQuestionsText.some(asked => asked.includes(q.question))
+      ).length;
+
+      const assistantCount = assistantMessages.length;
+
+      if (standardAskedCount >= questions.length) {
+        aiResponse = 'Great, that concludes our interview! Click "Disconnect Call" or "End & Score" to see your evaluation and score.';
+      } else if (recruiterMode && assistantCount > 0 && assistantCount % 2 === 1) {
+        // In recruiter mode, every other question is a tough follow-up
+        const idx = Math.floor(Math.random() * recruiterFollowUps.length);
+        aiResponse = recruiterFollowUps[idx];
       } else {
-        aiResponse = 'Great, that concludes our interview! Click "End Interview" to see your evaluation and score.';
+        if (remainingQuestions.length > 0) {
+          const idx = Math.floor(Math.random() * remainingQuestions.length);
+          aiResponse = remainingQuestions[idx].question;
+        } else {
+          aiResponse = 'Great, that concludes our interview! Click "Disconnect Call" or "End & Score" to see your evaluation and score.';
+        }
       }
     }
 
@@ -140,13 +240,11 @@ router.post('/end', authMiddleware, async (req, res) => {
   try {
     const { role, history } = req.body;
 
-    // Simple scoring based on answer length, detail, and keyword presence
     const userMessages = history.filter(m => m.role === 'user');
     let totalScore = 0;
     let totalWords = 0;
     let totalFillerWords = 0;
     
-    // List of common verbal filler words
     const fillerWordsList = ['like', 'basically', 'actually', 'um', 'uh', 'so', 'literally', 'you know'];
 
     userMessages.forEach(msg => {
@@ -154,7 +252,6 @@ router.post('/end', authMiddleware, async (req, res) => {
       const words = text.split(/\s+/).filter(Boolean);
       totalWords += words.length;
       
-      // Count filler words
       words.forEach(w => {
         const cleanWord = w.replace(/[^a-z]/g, '');
         if (fillerWordsList.includes(cleanWord)) {
@@ -164,15 +261,15 @@ router.post('/end', authMiddleware, async (req, res) => {
 
       let msgScore = 0;
 
-      // Length score (longer = more detailed, up to 40 pts)
+      // Length score (up to 40 pts)
       msgScore += Math.min(40, Math.round((words.length / 50) * 40));
 
-      // Technical depth (keywords present, up to 30 pts)
+      // Technical depth (up to 30 pts)
       const techTerms = ['api', 'database', 'server', 'frontend', 'backend', 'react', 'node', 'component', 'algorithm', 'performance', 'security', 'testing', 'deploy', 'architecture', 'cache', 'async', 'promise', 'state', 'query', 'index'];
       const techCount = techTerms.filter(t => text.includes(t)).length;
       msgScore += Math.min(30, techCount * 6);
 
-      // Clarity — has examples or numbers (up to 30 pts)
+      // Clarity (up to 30 pts)
       const hasExample = /for example|such as|like|instance|e\.g\./i.test(text);
       const hasNumbers = /\d+/.test(text);
       if (hasExample) msgScore += 15;
@@ -184,7 +281,6 @@ router.post('/end', authMiddleware, async (req, res) => {
     const avgScore = userMessages.length > 0 ? Math.round(totalScore / userMessages.length) : 0;
     const finalScore = Math.min(100, avgScore);
 
-    // Calculate communication stats
     const averageWordCount = userMessages.length > 0 ? Math.round(totalWords / userMessages.length) : 0;
     const fillerDensity = totalFillerWords / (totalWords || 1);
     
@@ -197,7 +293,6 @@ router.post('/end', authMiddleware, async (req, res) => {
       clarityGrade = 'B';
     }
 
-    // Generate feedback
     let feedback;
     if (finalScore >= 80) {
       feedback = 'Excellent performance! Your answers were detailed, technically sound, and well-structured. You demonstrated strong knowledge and communication skills.';
