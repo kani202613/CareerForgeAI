@@ -21,18 +21,50 @@ function atsAnalyze(text) {
   const sectionsFound = [];
 
   // --- CANDIDATE TYPE AUTO-DETECTION ---
-  const experiencedTerms = ['senior', 'lead', 'manager', 'principal', 'head', 'director', 'architect', 'years of experience', 'years\' experience', '3+ years', '4+ years', '5+ years', '10+ years'];
-  const hasExperiencedTerm = experiencedTerms.some(term => lower.includes(term));
+  // Find years specifically in the "Experience" section to avoid counting school graduation years
+  let experienceSectionText = '';
+  const expIndex = lower.indexOf('experience');
+  const workIndex = lower.indexOf('work history');
+  const empIndex = lower.indexOf('employment');
   
-  const years = (text.match(/\b(20\d{2})\b/g) || []).map(Number);
-  let yearSpan = 0;
-  if (years.length > 1) {
-    const minYear = Math.min(...years);
-    const maxYear = Math.max(...years);
-    yearSpan = maxYear - minYear;
+  let startIndex = -1;
+  if (expIndex !== -1) startIndex = expIndex;
+  else if (workIndex !== -1) startIndex = workIndex;
+  else if (empIndex !== -1) startIndex = empIndex;
+
+  if (startIndex !== -1) {
+    const headers = ['education', 'skills', 'projects', 'summary', 'certifications', 'awards', 'languages'];
+    let endIndex = lower.length;
+    headers.forEach(h => {
+      const hIndex = lower.indexOf(h, startIndex + 10);
+      if (hIndex !== -1 && hIndex < endIndex) {
+        endIndex = hIndex;
+      }
+    });
+    experienceSectionText = lower.substring(startIndex, endIndex);
   }
+
+  const expYears = (experienceSectionText.match(/\b(20\d{2})\b/g) || []).map(Number);
+  let expSpan = 0;
+  if (expYears.length > 1) {
+    const minYear = Math.min(...expYears);
+    const maxYear = Math.max(...expYears);
+    expSpan = maxYear - minYear;
+  }
+
+  // Match experienced terms as whole words or specific phrase patterns to avoid false positives (e.g. "lead" matching "leadership" or verb "lead")
+  const experiencedRegexes = [
+    /\b(senior|sr\.|principal|director|architect|manager)\b/i,
+    /\blead\s+(engineer|developer|architect|analyst|programmer|specialist|consultant|manager|designer)\b/i,
+    /\b(3|4|5|6|7|8|9|10)\+\s*yrs?\b/i,
+    /\b(3|4|5|6|7|8|9|10)\+\s*years?\b/i,
+    /\b(3|4|5|6|7|8|9|10)\s*yrs?\s+(of\s+)?experience\b/i,
+    /\b(3|4|5|6|7|8|9|10)\s*years?\s+(of\s+)?experience\b/i
+  ];
+  const hasExperiencedTerm = experiencedRegexes.some(rx => rx.test(text));
   
-  const isExperienced = hasExperiencedTerm || yearSpan >= 3;
+  // A candidate is experienced only if they have explicit senior terms or have a work history span of >= 3 years
+  const isExperienced = hasExperiencedTerm || expSpan >= 3;
   const candidateProfile = isExperienced ? 'Experienced (3+ years)' : 'Fresher (0-2 years)';
 
   // --- 1. SECTION COMPLETENESS & CONTACT VERIFICATION ---
@@ -141,17 +173,22 @@ function atsAnalyze(text) {
   formattingScore -= (nonStandardHeaderCount * 5);
   formattingScore = Math.max(0, formattingScore);
 
-  // Formatting warnings (visual noise, tables, unreadable dates)
+  let penaltyScore = 0;
+
+  // Formatting warnings (visual noise, tables, unreadable dates) with strict scoring penalties
   if (/[●○★☆■□]/.test(text) || lower.includes('5/5') || lower.includes('10/10') || /\b\d{2}%\b/.test(text)) {
     warnings.push("Avoid visual skill ratings (e.g. stars, circles, progress bars). ATS scanners read them as garbled characters or visual noise.");
+    penaltyScore += 15;
   }
 
   if (/\b(spring|summer|fall|winter|autumn)\s+\d{4}\b/i.test(text)) {
     warnings.push("Seasonal dates (e.g. 'Spring 2022') detected. ATS systems cannot calculate work duration from seasons. Use standard month/year format (e.g. '04/2022' or 'April 2022').");
+    penaltyScore += 10;
   }
 
   if (text.includes('|') || (text.match(/\t{2,}/g) || []).length > 2) {
     warnings.push("Potential table structure or vertical separators (|) detected. Tables and complex multi-column layouts confuse older ATS parsers, merging text in the wrong order.");
+    penaltyScore += 15;
   }
 
   // --- 3. KEYWORD & SKILLS MATCH ---
@@ -328,6 +365,8 @@ function atsAnalyze(text) {
     atsScore = Math.round(keywordScore + finalSectionScore + educationScore + formattingWeight);
   }
 
+  // Apply strict layout and formatting penalties
+  atsScore -= penaltyScore;
   atsScore = Math.max(0, Math.min(100, atsScore));
   const resumeScore = atsScore;
 
