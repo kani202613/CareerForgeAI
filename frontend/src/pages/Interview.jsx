@@ -13,7 +13,8 @@ import {
   PhoneOff, 
   MessageSquare,
   Sparkles,
-  Play
+  Play,
+  Volume2
 } from 'lucide-react';
 
 const Interview = () => {
@@ -31,6 +32,10 @@ const Interview = () => {
   const [mediaStream, setMediaStream] = useState(null);
   const [screenStream, setScreenStream] = useState(null);
 
+  // Voice recognition (Speech-to-Text) states
+  const [isListening, setIsListening] = useState(false);
+  const recognitionRef = useRef(null);
+
   const localVideoRef = useRef(null);
   const { token } = useAuthStore();
   const navigate = useNavigate();
@@ -45,9 +50,6 @@ const Interview = () => {
       setMediaStream(stream);
       setCameraOn(true);
       setMuted(false);
-      if (localVideoRef.current) {
-        localVideoRef.current.srcObject = stream;
-      }
     } catch (err) {
       console.error("Webcam access failed:", err);
       alert("Could not access camera/microphone. Visual indicators will fall back, but you can continue answering text questions.");
@@ -67,6 +69,9 @@ const Interview = () => {
     }
     setCameraOn(false);
     setScreenShare(false);
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
   };
 
   // Mute/Unmute microphone
@@ -98,10 +103,6 @@ const Interview = () => {
         const stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
         setScreenStream(stream);
         setScreenShare(true);
-        if (localVideoRef.current) {
-          localVideoRef.current.srcObject = stream;
-        }
-
         // Handle native stop sharing button click in browser
         stream.getVideoTracks()[0].onended = () => {
           handleStopScreenShare(stream);
@@ -120,12 +121,79 @@ const Interview = () => {
     }
     setScreenStream(null);
     setScreenShare(false);
-    
-    // Revert source back to webcam stream
-    if (localVideoRef.current && mediaStream) {
-      localVideoRef.current.srcObject = mediaStream;
+  };
+
+  // Voice Input (Speech-to-Text transcribing)
+  const startVoiceInput = () => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert("Browser does not support Speech Recognition. Please type your answers.");
+      return;
+    }
+
+    if (isListening) {
+      recognitionRef.current?.stop();
+      setIsListening(false);
+      return;
+    }
+
+    const rec = new SpeechRecognition();
+    rec.continuous = false;
+    rec.interimResults = false;
+    rec.lang = 'en-US';
+
+    rec.onstart = () => {
+      setIsListening(true);
+    };
+
+    rec.onresult = (event) => {
+      const resultText = event.results[0][0].transcript;
+      setInput(prev => prev + (prev ? ' ' : '') + resultText);
+    };
+
+    rec.onerror = (e) => {
+      console.error("Speech recognition error:", e);
+      setIsListening(false);
+    };
+
+    rec.onend = () => {
+      setIsListening(false);
+    };
+
+    recognitionRef.current = rec;
+    rec.start();
+  };
+
+  // Text-to-Speech (Speak Interviewer questions)
+  const speakText = (text) => {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      // Remove call-control strings
+      const cleaned = text.replace(/Click "Disconnect Call"|Click "End & Score"|Click "End Interview"/gi, '');
+      const utterance = new SpeechSynthesisUtterance(cleaned);
+      const voices = window.speechSynthesis.getVoices();
+      const voice = voices.find(v => 
+        v.name.includes('Google US English') || 
+        v.name.includes('Microsoft David') || 
+        v.name.includes('Natural') || 
+        v.lang.startsWith('en')
+      );
+      if (voice) utterance.voice = voice;
+      utterance.rate = 0.95;
+      window.speechSynthesis.speak(utterance);
     }
   };
+
+  // Bind media stream source to video element ref dynamically
+  useEffect(() => {
+    if (localVideoRef.current) {
+      if (screenShare && screenStream) {
+        localVideoRef.current.srcObject = screenStream;
+      } else if (cameraOn && mediaStream) {
+        localVideoRef.current.srcObject = mediaStream;
+      }
+    }
+  }, [mediaStream, screenStream, cameraOn, screenShare]);
 
   // Start webcam when call starts
   useEffect(() => {
@@ -136,6 +204,16 @@ const Interview = () => {
       stopAllTracks();
     };
   }, [history.length]);
+
+  // Automatically read questions out loud when assistant sends them
+  useEffect(() => {
+    if (history.length > 0) {
+      const lastMsg = history[history.length - 1];
+      if (lastMsg.role === 'assistant') {
+        speakText(lastMsg.content);
+      }
+    }
+  }, [history]);
 
   const handleSend = async (isFirst = false) => {
     if (!isFirst && !input.trim()) return;
@@ -286,7 +364,7 @@ const Interview = () => {
           }}>
             
             {/* Live Indicator overlay */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center', marginBottom: '1rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', itemsCenter: 'center', marginBottom: '1rem' }}>
               <div style={{
                 display: 'inline-flex',
                 alignItems: 'center',
@@ -328,15 +406,21 @@ const Interview = () => {
               justifyContent: 'center',
               marginBottom: '1rem'
             }}>
-              {cameraOn || screenShare ? (
-                <video 
-                  ref={localVideoRef} 
-                  autoPlay 
-                  playsInline 
-                  muted 
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-                />
-              ) : (
+              {/* Webcam Video Tag is ALWAYS kept in DOM to prevent React Ref Null exceptions */}
+              <video 
+                ref={localVideoRef} 
+                autoPlay 
+                playsInline 
+                muted 
+                style={{ 
+                  width: '100%', 
+                  height: '100%', 
+                  objectFit: 'cover',
+                  display: (cameraOn || screenShare) ? 'block' : 'none'
+                }} 
+              />
+              
+              {!(cameraOn || screenShare) && (
                 <div style={{ textAlign: 'center', color: 'var(--text-muted)' }}>
                   <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>📹</div>
                   <p style={{ fontSize: '0.85rem', margin: 0 }}>Webcam feed is inactive</p>
@@ -360,7 +444,7 @@ const Interview = () => {
               </div>
             </div>
 
-            {/* Interviewer Status and Audio wave */}
+            {/* Human HR Interviewer Face Card */}
             <div className="flex items-center gap-4" style={{ 
               background: 'rgba(255,255,255,0.02)', 
               border: '1px solid var(--border-subtle)',
@@ -369,20 +453,29 @@ const Interview = () => {
               width: '100%',
               marginBottom: '1.5rem'
             }}>
+              {/* Image element featuring human corporate interviewer avatar with fallback */}
               <div style={{
-                width: '56px',
-                height: '56px',
+                width: '60px',
+                height: '60px',
                 borderRadius: '50%',
-                background: loading ? 'var(--gradient-primary)' : 'rgba(255, 255, 255, 0.03)',
                 border: loading ? '2px solid var(--accent-primary)' : '1px solid var(--border-strong)',
+                boxShadow: loading ? 'var(--shadow-glow)' : 'none',
+                transition: 'all 0.3s ease',
+                overflow: 'hidden',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '1.5rem',
+                background: 'var(--bg-elevated)',
                 flexShrink: 0
               }}>
-                🤖
+                <img 
+                  src="/interviewer_avatar.png" 
+                  alt="AI Interviewer" 
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                  onError={(e) => { e.currentTarget.src = "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=200"; }}
+                />
               </div>
+
               <div className="flex-col" style={{ flex: 1, gap: '0.15rem' }}>
                 <strong style={{ fontSize: '0.875rem', color: 'var(--text-primary)' }}>
                   {loading ? 'AI Interviewer is speaking...' : 'AI Interviewer (Listening)'}
@@ -526,12 +619,28 @@ const Interview = () => {
 
             {/* User Answer Input Block */}
             <div className="flex gap-2" style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '0.75rem' }}>
+              {/* Speech-to-Text Button */}
+              <button 
+                className="btn btn-secondary" 
+                onClick={startVoiceInput} 
+                style={{ 
+                  padding: '0.75rem 1rem',
+                  borderColor: isListening ? '#ef4444' : undefined,
+                  background: isListening ? 'rgba(239, 68, 68, 0.1)' : undefined,
+                  color: isListening ? '#ef4444' : undefined
+                }}
+                title={isListening ? 'Stop Listening' : 'Speak Answer'}
+                disabled={loading}
+              >
+                <Mic size={16} />
+              </button>
+
               <input 
                 className="input-field" 
                 style={{ flex: 1 }} 
                 value={input} 
                 onChange={e => setInput(e.target.value)}
-                placeholder="Type your answer context here..."
+                placeholder={isListening ? "Listening to your voice..." : "Type or speak your answer context here..."}
                 onKeyPress={e => e.key === 'Enter' && handleSend(false)}
                 disabled={loading}
               />
