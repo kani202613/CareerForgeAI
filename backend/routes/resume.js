@@ -357,20 +357,49 @@ function atsAnalyze(text) {
     return { text: line, status: 'neutral', reason: '' };
   });
 
+  const formattingWeight = Math.round((formattingScore / 25) * 6 + (structureScore / 10) * 4);
+
+  // 1. Overall Rating (Role-appropriate score based on candidate profile)
+  let overallScore = 0;
   if (isExperienced) {
-    const formattingWeight = Math.round((formattingScore / 25) * 6 + (structureScore / 10) * 4);
-    atsScore = Math.round(keywordScore + projectScore + finalSectionScore + formattingWeight);
+    overallScore = Math.round(keywordScore + projectScore + finalSectionScore + formattingWeight);
   } else {
-    const formattingWeight = Math.round((formattingScore / 25) * 6 + (structureScore / 10) * 4);
-    atsScore = Math.round(keywordScore + finalSectionScore + educationScore + formattingWeight);
+    overallScore = Math.round(keywordScore + finalSectionScore + educationScore + formattingWeight);
   }
+  
+  // Overall rating is slightly more forgiving of structural layout penalties
+  overallScore -= Math.round(penaltyScore * 0.5);
+  overallScore = Math.max(0, Math.min(100, overallScore));
+  const resumeScore = overallScore;
 
-  // Apply strict layout and formatting penalties
-  atsScore -= penaltyScore;
-  atsScore = Math.max(0, Math.min(100, atsScore));
-  const resumeScore = atsScore;
+  // 2. Strict ATS Match (Absolute corporate ATS standard - no fresher discounts)
+  // Enterprise ATS scanners score all resumes on the same absolute scale of keyword density, work history metrics, and formatting compliance.
+  let strictProjectScore = 0;
+  if (hasExperience) strictProjectScore += 10;
+  if (numbersFound.length >= 5) strictProjectScore += 10;
+  else if (numbersFound.length >= 3) strictProjectScore += 6;
+  else if (numbersFound.length >= 1) strictProjectScore += 3;
+  
+  if (verbsFound.length >= 8) strictProjectScore += 10;
+  else if (verbsFound.length >= 4) strictProjectScore += 6;
+  else if (verbsFound.length >= 1) strictProjectScore += 3;
 
-  const feedbackSummary = `Your resume parsed profile is classified as: ${candidateProfile}. Overall ATS Score: ${atsScore}/100. It contains standard sections like ${sectionsFound.slice(0, 3).join(', ')}.`;
+  let strictKeywordScore = 0;
+  if (techFound.length >= 15) strictKeywordScore += 35;
+  else if (techFound.length >= 10) strictKeywordScore += 25;
+  else if (techFound.length >= 5) strictKeywordScore += 15;
+  else strictKeywordScore += 5;
+
+  if (softFound.length >= 3) strictKeywordScore += 5;
+  else strictKeywordScore += 2;
+
+  const strictSectionScore = Math.min(20, sectionScore + contactScore);
+
+  let strictAtsScore = Math.round(strictKeywordScore + strictProjectScore + strictSectionScore + formattingWeight);
+  strictAtsScore -= penaltyScore;
+  atsScore = Math.max(0, Math.min(100, strictAtsScore));
+
+  const feedbackSummary = `Your resume parsed profile is classified as: ${candidateProfile}. Overall Rating: ${overallScore}/100, Strict ATS Match: ${atsScore}%. It contains standard sections like ${sectionsFound.slice(0, 3).join(', ')}.`;
 
   return {
     resumeScore,
