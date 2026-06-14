@@ -1,8 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import { UploadCloud, CheckCircle, TrendingUp, BookOpen } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import useAuthStore from '../store/authStore';
+import { 
+  FileText, 
+  MessageSquare, 
+  TrendingUp, 
+  Award, 
+  Sparkles, 
+  CheckCircle, 
+  AlertCircle,
+  ArrowRight,
+  ShieldAlert
+} from 'lucide-react';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -30,53 +40,232 @@ const Dashboard = () => {
 
   return (
     <div className="flex-col gap-8">
-      <div>
-        <h2 style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>Welcome back, <span className="text-gradient">{user?.name || 'Student'}</span></h2>
-        <p className="text-muted">Here is your current placement readiness overview.</p>
+      {/* Welcome Hero Banner */}
+      <div className="glass-panel" style={{
+        background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.12) 0%, rgba(217, 70, 239, 0.08) 100%)',
+        border: '1px solid rgba(99, 102, 241, 0.2)',
+        padding: '2.5rem',
+        position: 'relative',
+        overflow: 'hidden'
+      }}>
+        <div style={{ position: 'relative', zIndex: 2 }}>
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            background: 'rgba(255, 255, 255, 0.04)',
+            border: '1px solid rgba(255, 255, 255, 0.08)',
+            padding: '0.35rem 0.75rem',
+            borderRadius: '1rem',
+            fontSize: '0.8rem',
+            fontWeight: 600,
+            color: 'var(--accent-secondary)',
+            marginBottom: '1rem'
+          }}>
+            <Sparkles size={12} />
+            <span>Placement Readiness Activated</span>
+          </div>
+
+          <h2 style={{ fontSize: '2.25rem', fontWeight: 800, marginBottom: '0.75rem', fontFamily: 'var(--font-display)' }}>
+            Forge Your Way to <span className="text-gradient">Success</span>, {user?.name || 'Student'}
+          </h2>
+          <p className="text-secondary" style={{ maxWidth: '680px', fontSize: '0.95rem', lineHeight: 1.6, margin: 0 }}>
+            Run strict ATS document audits and voice communication analytics to identify keyword gaps. Get immediate diagnostic results tailored to senior developer expectations.
+          </p>
+        </div>
+
+        {/* Decorative Grid Overlay */}
+        <div style={{
+          position: 'absolute', top: 0, right: 0, bottom: 0, left: 0,
+          backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.015) 1px, transparent 1px)',
+          backgroundSize: '16px 16px', pointerEvents: 'none'
+        }} />
       </div>
-      
-      <div className="flex gap-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
-        <div className="glass-panel">
-          <div className="flex items-center justify-between mb-4">
-            <h3 style={{ fontSize: '1.1rem' }}>Resume Score</h3>
-            <UploadCloud color="var(--accent-primary)" />
+
+      {/* Interactive Metrics Bar */}
+      <div className="flex gap-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem' }}>
+        
+        {/* ATS Score Card */}
+        <div className="glass-panel glass-panel-hover flex-col gap-4">
+          <div className="flex items-center justify-between">
+            <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', fontWeight: 600 }}>STRICT ATS MATCH</span>
+            <FileText size={18} color="var(--accent-primary)" />
           </div>
-          <div className="text-gradient" style={{ fontSize: '2.5rem', fontWeight: 'bold' }}>{data.resumeScore}/100</div>
-          <p className="text-muted mt-4" style={{ fontSize: '0.875rem' }}>+5% from last upload</p>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.25rem' }}>
+              <span style={{ fontSize: '2.5rem', fontWeight: 800, fontFamily: 'var(--font-display)' }} className="text-gradient">
+                {data.atsScore || 0}
+              </span>
+              <span style={{ fontSize: '1rem', color: 'var(--text-muted)' }}>/100</span>
+            </div>
+            {/* Progress line */}
+            <div style={{ width: '100%', height: '4px', background: 'var(--bg-base)', borderRadius: '2px', marginTop: '0.75rem', overflow: 'hidden' }}>
+              <div style={{ width: `${data.atsScore || 0}%`, height: '100%', background: 'var(--gradient-primary)', borderRadius: '2px' }} />
+            </div>
+          </div>
+          <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: 0 }}>
+            {data.atsScore > 60 ? '✓ Exceeds freshers baseline keywords' : '⚠️ Missing crucial tools/keywords'}
+          </p>
         </div>
 
-        <div className="glass-panel">
-          <div className="flex items-center justify-between mb-4">
-            <h3 style={{ fontSize: '1.1rem' }}>ATS Match</h3>
-            <CheckCircle color="var(--accent-tertiary)" />
+        {/* Interview Score Card */}
+        <div className="glass-panel glass-panel-hover flex-col gap-4">
+          <div className="flex items-center justify-between">
+            <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', fontWeight: 600 }}>LAST MOCK GRADE</span>
+            <Award size={18} color="var(--accent-secondary)" />
           </div>
-          <div className="text-gradient" style={{ fontSize: '2.5rem', fontWeight: 'bold', backgroundImage: 'var(--gradient-glow)' }}>{data.atsScore}%</div>
-          <p className="text-muted mt-4" style={{ fontSize: '0.875rem' }}>Needs improvement in keywords</p>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.25rem' }}>
+              <span style={{ fontSize: '2.5rem', fontWeight: 800, fontFamily: 'var(--font-display)' }} className="text-gradient">
+                {data.interviewScore || 0}
+              </span>
+              <span style={{ fontSize: '1rem', color: 'var(--text-muted)' }}>/100</span>
+            </div>
+            {/* Progress line */}
+            <div style={{ width: '100%', height: '4px', background: 'var(--bg-base)', borderRadius: '2px', marginTop: '0.75rem', overflow: 'hidden' }}>
+              <div style={{ width: `${data.interviewScore || 0}%`, height: '100%', background: 'var(--accent-secondary)', borderRadius: '2px' }} />
+            </div>
+          </div>
+          <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: 0 }}>
+            {data.interviewScore > 75 ? '✓ Strong communication depth' : '⚠️ Filler words count needs improvement'}
+          </p>
         </div>
 
-        <div className="glass-panel">
-          <div className="flex items-center justify-between mb-4">
-            <h3 style={{ fontSize: '1.1rem' }}>Placement Readiness</h3>
-            <TrendingUp color="var(--accent-secondary)" />
+        {/* Readiness Meter Card */}
+        <div className="glass-panel glass-panel-hover flex-col gap-4">
+          <div className="flex items-center justify-between">
+            <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', fontWeight: 600 }}>READINESS INDEX</span>
+            <TrendingUp size={18} color="var(--accent-tertiary)" />
           </div>
-          <div className="text-gradient" style={{ fontSize: '2.5rem', fontWeight: 'bold' }}>{data.placementReadiness}%</div>
-          <p className="text-muted mt-4" style={{ fontSize: '0.875rem' }}>Based on 3 mock interviews</p>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.25rem' }}>
+              <span style={{ fontSize: '2.5rem', fontWeight: 800, fontFamily: 'var(--font-display)' }} className="text-gradient-teal">
+                {data.placementReadiness || 0}%
+              </span>
+            </div>
+            {/* Progress line */}
+            <div style={{ width: '100%', height: '4px', background: 'var(--bg-base)', borderRadius: '2px', marginTop: '0.75rem', overflow: 'hidden' }}>
+              <div style={{ width: `${data.placementReadiness || 0}%`, height: '100%', background: 'linear-gradient(135deg, #14b8a6, #3b82f6)', borderRadius: '2px' }} />
+            </div>
+          </div>
+          <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: 0 }}>
+            Combined resume scoring & mock interview stats
+          </p>
         </div>
       </div>
-      
-      <div className="flex gap-4" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr' }}>
-        <div className="glass-panel flex-col justify-center items-center text-center">
-          <UploadCloud size={48} color="var(--accent-primary)" style={{ marginBottom: '1rem' }} />
-          <h3 className="mb-4">Upload New Resume</h3>
-          <p className="text-muted mb-8" style={{ fontSize: '0.875rem' }}>Get instant feedback on your resume using our AI analyzer.</p>
-          <button className="btn btn-primary" onClick={() => navigate('/resume')}>Analyze Resume</button>
+
+      {/* Large Columns Split */}
+      <div className="flex gap-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem' }}>
+        
+        {/* Core Actions */}
+        <div className="flex-col gap-4">
+          {/* Action 1: Resume Upload */}
+          <div className="glass-panel glass-panel-hover flex-col gap-4" style={{ padding: '1.75rem' }}>
+            <div style={{ background: 'rgba(99, 102, 241, 0.1)', color: 'var(--accent-primary)', width: '42px', height: '42px', borderRadius: '0.5rem', display: 'flex', alignItems: 'center', justifyCenter: 'center', justifyContent: 'center' }}>
+              <FileText size={22} />
+            </div>
+            <div>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.35rem' }}>ATS Sandbox Audit</h3>
+              <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>
+                Upload your resume PDF and analyze how modern parser algorithms look at your formatting, dates, layout pipelines, and keyword densities.
+              </p>
+            </div>
+            <button 
+              className="btn btn-secondary w-full" 
+              onClick={() => navigate('/resume')}
+              style={{ justifyContent: 'space-between', padding: '0.75rem 1.25rem' }}
+            >
+              <span>Scan Resume</span>
+              <ArrowRight size={16} />
+            </button>
+          </div>
+
+          {/* Action 2: Mock Interview */}
+          <div className="glass-panel glass-panel-hover flex-col gap-4" style={{ padding: '1.75rem' }}>
+            <div style={{ background: 'rgba(217, 70, 239, 0.1)', color: 'var(--accent-secondary)', width: '42px', height: '42px', borderRadius: '0.5rem', display: 'flex', alignItems: 'center', justifyCenter: 'center', justifyContent: 'center' }}>
+              <MessageSquare size={22} />
+            </div>
+            <div>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.35rem' }}>AI Interview Simulator</h3>
+              <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>
+                Practice real-time text/voice conversation inside our mock video panel, tracking verbal filler pacing, speech grade levels, and technical depth.
+              </p>
+            </div>
+            <button 
+              className="btn btn-primary w-full" 
+              onClick={() => navigate('/interview')}
+              style={{ justifyContent: 'space-between', padding: '0.75rem 1.25rem' }}
+            >
+              <span>Enter Call Room</span>
+              <ArrowRight size={16} />
+            </button>
+          </div>
         </div>
 
-        <div className="glass-panel flex-col justify-center items-center text-center">
-          <BookOpen size={48} color="var(--accent-secondary)" style={{ marginBottom: '1rem' }} />
-          <h3 className="mb-4">Mock Interview</h3>
-          <p className="text-muted mb-8" style={{ fontSize: '0.875rem' }}>Practice with our AI simulator tailored to your target role.</p>
-          <button className="btn btn-secondary" onClick={() => navigate('/interview')}>Start Interview</button>
+        {/* Preparation Milestones / Checklist */}
+        <div className="glass-panel flex-col gap-6" style={{ padding: '1.75rem' }}>
+          <div>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.25rem' }}>Milestone Preparation path</h3>
+            <p style={{ fontSize: '0.825rem', color: 'var(--text-muted)', margin: 0 }}>Complete the following steps to maximize placement success.</p>
+          </div>
+
+          <div className="timeline">
+            {/* Step 1 */}
+            <div className="timeline-item flex-col gap-1">
+              <span className={`timeline-dot ${(data.atsScore > 0) ? 'completed' : ''}`} style={{
+                background: (data.atsScore > 0) ? 'var(--accent-tertiary)' : undefined
+              }} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <strong style={{ fontSize: '0.9rem', color: 'var(--text-primary)' }}>1. Submit Resume Diagnostic</strong>
+                {(data.atsScore > 0) && <CheckCircle size={14} color="var(--accent-tertiary)" />}
+              </div>
+              <p style={{ fontSize: '0.775rem', color: 'var(--text-secondary)', margin: 0 }}>
+                Upload your resume PDF to register a score in our database.
+              </p>
+            </div>
+
+            {/* Step 2 */}
+            <div className="timeline-item flex-col gap-1">
+              <span className={`timeline-dot ${(data.atsScore > 50) ? 'completed' : ''}`} style={{
+                background: (data.atsScore > 50) ? 'var(--accent-tertiary)' : undefined
+              }} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <strong style={{ fontSize: '0.9rem', color: 'var(--text-primary)' }}>2. Clear Formatting Warnings</strong>
+                {(data.atsScore > 50) && <CheckCircle size={14} color="var(--accent-tertiary)" />}
+              </div>
+              <p style={{ fontSize: '0.775rem', color: 'var(--text-secondary)', margin: 0 }}>
+                Clean up visual icons, seasonal dates, and achieve a strict score over 50%.
+              </p>
+            </div>
+
+            {/* Step 3 */}
+            <div className="timeline-item flex-col gap-1">
+              <span className={`timeline-dot ${(data.interviewScore > 0) ? 'completed' : ''}`} style={{
+                background: (data.interviewScore > 0) ? 'var(--accent-tertiary)' : undefined
+              }} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <strong style={{ fontSize: '0.9rem', color: 'var(--text-primary)' }}>3. Run Interview Practice</strong>
+                {(data.interviewScore > 0) && <CheckCircle size={14} color="var(--accent-tertiary)" />}
+              </div>
+              <p style={{ fontSize: '0.775rem', color: 'var(--text-secondary)', margin: 0 }}>
+                Conduct a mock interview simulation to map verbal pacing.
+              </p>
+            </div>
+
+            {/* Step 4 */}
+            <div className="timeline-item flex-col gap-1">
+              <span className={`timeline-dot ${(data.interviewScore >= 70) ? 'completed' : ''}`} style={{
+                background: (data.interviewScore >= 70) ? 'var(--accent-tertiary)' : undefined
+              }} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <strong style={{ fontSize: '0.9rem', color: 'var(--text-primary)' }}>4. Achieve Gold Grade</strong>
+                {(data.interviewScore >= 70) && <CheckCircle size={14} color="var(--accent-tertiary)" />}
+              </div>
+              <p style={{ fontSize: '0.775rem', color: 'var(--text-secondary)', margin: 0 }}>
+                Reduce verbal fillers and achieve a grade B or above.
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </div>

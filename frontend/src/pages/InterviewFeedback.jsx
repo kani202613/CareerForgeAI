@@ -1,229 +1,347 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Trophy, Target, TrendingUp, AlertTriangle, ArrowLeft, RotateCcw } from 'lucide-react';
+import { 
+  Trophy, 
+  ArrowLeft, 
+  RotateCcw, 
+  Sparkles, 
+  CheckCircle,
+  MessageSquare,
+  Volume2,
+  TrendingUp,
+  AlertTriangle,
+  Lightbulb
+} from 'lucide-react';
 
 const InterviewFeedback = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { score, feedback, role, transcript, fillerWordsCount, averageWordCount, clarityGrade } = location.state || {};
 
-  // If no data, redirect back
+  // Redirect if no direct call state logs exist
   if (!score && score !== 0) {
     navigate('/interview');
     return null;
   }
 
-  // Determine grade & color
-  let grade, gradeColor, gradeLabel;
+  // Define grade tags
+  let grade, gradeColor, gradeLabel, gradeBg;
   if (score >= 80) {
-    grade = 'A'; gradeColor = '#22c55e'; gradeLabel = 'Excellent';
+    grade = 'A'; gradeColor = '#10b981'; gradeLabel = 'EXCELLENT RUN'; gradeBg = 'rgba(16, 185, 129, 0.08)';
   } else if (score >= 60) {
-    grade = 'B'; gradeColor = '#3b82f6'; gradeLabel = 'Good';
+    grade = 'B'; gradeColor = '#3b82f6'; gradeLabel = 'GOOD FLOW'; gradeBg = 'rgba(59, 130, 246, 0.08)';
   } else if (score >= 40) {
-    grade = 'C'; gradeColor = '#f59e0b'; gradeLabel = 'Average';
+    grade = 'C'; gradeColor = '#f59e0b'; gradeLabel = 'AVERAGE PACING'; gradeBg = 'rgba(245, 158, 11, 0.08)';
   } else {
-    grade = 'D'; gradeColor = '#ef4444'; gradeLabel = 'Needs Improvement';
+    grade = 'D'; gradeColor = '#ef4444'; gradeLabel = 'NEEDS IMPROVEMENT'; gradeBg = 'rgba(239, 68, 68, 0.08)';
   }
 
-  // Generate suggestions based on score
+  // Compute text pacing advice
   const suggestions = [];
-  if (score < 80) suggestions.push('Use specific examples from your real projects to support your answers.');
-  if (score < 70) suggestions.push('Mention technologies, frameworks, and tools by name rather than speaking generically.');
-  if (score < 60) suggestions.push('Quantify your achievements — use numbers like "reduced load time by 40%".');
-  if (score < 50) suggestions.push('Provide longer, more detailed explanations to show depth of knowledge.');
-  if (score < 40) suggestions.push('Practice common interview questions and prepare structured responses (STAR method).');
-  suggestions.push('Review the transcript below to identify weak answers and improve them.');
-  if (score >= 80) suggestions.push('Great job! Consider practicing with Recruiter Mode for an even tougher challenge.');
+  if (score < 80) suggestions.push('Incorporate specific tech stack achievements rather than stating general interest.');
+  if (score < 70) suggestions.push('Explicitly name-drop libraries, design patterns, or testing frameworks used.');
+  if (score < 60) suggestions.push('Quantify project results (e.g. "improved component render latency by 20%").');
+  if (score < 50) suggestions.push('Elaborate further on implementation challenges to show senior depth.');
+  if (score < 40) suggestions.push('Adopt the STAR methodology (Situation, Task, Action, Result) for logical delivery.');
+  suggestions.push('Review marked verbal gaps below to reduce word repetition.');
 
-  // Count user answers
   const userMessages = (transcript || []).filter(m => m.role === 'user');
   const interviewerMessages = (transcript || []).filter(m => m.role === 'assistant');
+  const totalWords = userMessages.reduce((sum, m) => sum + m.content.split(/\s+/).length, 0);
 
   return (
-    <div className="flex-col gap-8" style={{ maxWidth: '900px', margin: '0 auto' }}>
-
-      {/* ── Header ── */}
+    <div className="flex-col gap-8" style={{ maxWidth: '1000px', margin: '0 auto' }}>
+      
+      {/* Header Back Button */}
       <div className="flex items-center gap-4">
-        <button className="btn btn-secondary" onClick={() => navigate('/')} style={{ padding: '0.5rem 1rem' }}>
-          <ArrowLeft size={16} /> Dashboard
+        <button 
+          className="btn btn-secondary" 
+          onClick={() => navigate('/')} 
+          style={{ padding: '0.5rem 1rem' }}
+        >
+          <ArrowLeft size={16} />
+          <span>Dashboard</span>
         </button>
-        <h2 style={{ fontSize: '2rem', margin: 0 }}>Interview Results</h2>
+        <h2 style={{ fontSize: '2rem', margin: 0, fontFamily: 'var(--font-display)' }}>Performance Audit</h2>
       </div>
 
-      {/* ── Score Card ── */}
-      <div className="glass-panel" style={{ textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
-        {/* Glow background */}
-        <div style={{
-          position: 'absolute', top: '-50%', left: '50%', transform: 'translateX(-50%)',
-          width: '300px', height: '300px', borderRadius: '50%',
-          background: `radial-gradient(circle, ${gradeColor}22, transparent 70%)`,
-          pointerEvents: 'none'
-        }} />
+      {/* Main Results View split columns */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: '0.9fr 1.1fr',
+        gap: '2rem',
+        alignItems: 'start'
+      }} className="responsive-editor-layout">
+        
+        {/* Left Side: Score speedometer and speech stats */}
+        <div className="flex-col gap-6">
+          
+          {/* Dashboard Speedometer Card */}
+          <div className="glass-panel flex-col items-center text-center" style={{ position: 'relative', padding: '2rem 1.5rem' }}>
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>
+              Target: {role}
+            </span>
 
-        <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '0.5rem' }}>
-          Role: <strong style={{ color: 'var(--text-primary)' }}>{role}</strong>
-        </p>
+            {/* SVG Speedometer Gauge */}
+            <div style={{ position: 'relative', display: 'inline-block', margin: '1.5rem 0' }}>
+              <svg width="200" height="120" viewBox="0 0 200 120">
+                {/* Background arc */}
+                <path 
+                  d="M20 110 A80 80 0 0 1 180 110" 
+                  fill="none" 
+                  stroke="var(--bg-elevated)" 
+                  strokeWidth="12" 
+                  strokeLinecap="round" 
+                />
+                {/* Colored arc representing score */}
+                <path 
+                  d="M20 110 A80 80 0 0 1 180 110" 
+                  fill="none" 
+                  stroke="url(#gradeGradient)" 
+                  strokeWidth="12" 
+                  strokeLinecap="round" 
+                  strokeDasharray="251" 
+                  strokeDashoffset={251 - (251 * score) / 100}
+                  style={{ transition: 'stroke-dashoffset 1.5s ease-out' }}
+                />
+                {/* Gradient Definitions */}
+                <defs>
+                  <linearGradient id="gradeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="var(--accent-primary)" />
+                    <stop offset="100%" stopColor={gradeColor} />
+                  </linearGradient>
+                </defs>
+              </svg>
 
-        {/* Circular score */}
-        <div style={{ position: 'relative', display: 'inline-block', margin: '1rem 0' }}>
-          <svg width="180" height="180" viewBox="0 0 180 180">
-            {/* Background circle */}
-            <circle cx="90" cy="90" r="78" fill="none" stroke="var(--bg-elevated)" strokeWidth="12" />
-            {/* Score arc */}
-            <circle cx="90" cy="90" r="78" fill="none" stroke={gradeColor} strokeWidth="12"
-              strokeLinecap="round"
-              strokeDasharray={`${(score / 100) * 490} 490`}
-              transform="rotate(-90 90 90)"
-              style={{ transition: 'stroke-dasharray 1.5s ease' }}
-            />
-          </svg>
-          <div style={{
-            position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
-            textAlign: 'center'
-          }}>
-            <div style={{ fontSize: '3rem', fontWeight: 800, fontFamily: 'var(--font-display)', color: gradeColor }}>
-              {score}
-            </div>
-            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>out of 100</div>
-          </div>
-        </div>
-
-        <div style={{
-          display: 'inline-block', padding: '0.4rem 1.2rem', borderRadius: 'var(--radius-2xl)',
-          background: `${gradeColor}18`, border: `1px solid ${gradeColor}44`, color: gradeColor,
-          fontWeight: 700, fontSize: '1rem', marginTop: '0.5rem'
-        }}>
-          Grade {grade} — {gradeLabel}
-        </div>
-      </div>
-
-      {/* ── Feedback ── */}
-      <div className="glass-panel flex-col gap-4">
-        <div className="flex items-center gap-2">
-          <Target size={20} style={{ color: 'var(--accent-primary)' }} />
-          <h3 style={{ margin: 0, fontSize: '1.25rem' }}>Feedback</h3>
-        </div>
-        <p style={{ color: 'var(--text-secondary)', lineHeight: 1.8, fontSize: '1rem' }}>
-          {feedback}
-        </p>
-      </div>
-
-      {/* ── Suggestions ── */}
-      <div className="glass-panel flex-col gap-4">
-        <div className="flex items-center gap-2">
-          <TrendingUp size={20} style={{ color: 'var(--accent-tertiary)' }} />
-          <h3 style={{ margin: 0, fontSize: '1.25rem' }}>Suggestions to Improve</h3>
-        </div>
-        <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-          {suggestions.map((s, i) => (
-            <li key={i} style={{
-              display: 'flex', alignItems: 'flex-start', gap: '0.75rem',
-              padding: '0.75rem 1rem', borderRadius: 'var(--radius-md)',
-              background: 'var(--bg-base)', border: '1px solid var(--border-subtle)'
-            }}>
-              <span style={{
-                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                minWidth: '24px', height: '24px', borderRadius: '50%', fontSize: '0.75rem',
-                background: 'var(--gradient-primary)', color: 'white', fontWeight: 700
+              {/* Text indicator inside gauge */}
+              <div style={{
+                position: 'absolute',
+                bottom: '10px',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                textAlign: 'center'
               }}>
-                {i + 1}
-              </span>
-              <span style={{ color: 'var(--text-secondary)', lineHeight: 1.6 }}>{s}</span>
-            </li>
-          ))}
-        </ul>
+                <div style={{ fontSize: '2.5rem', fontWeight: 800, fontFamily: 'var(--font-display)', color: 'var(--text-primary)', lineHeight: 1 }}>
+                  {score}
+                </div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>Readiness Score</div>
+              </div>
+            </div>
+
+            {/* Performance Grade Badge */}
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              padding: '0.4rem 1.2rem',
+              borderRadius: '2rem',
+              background: gradeBg,
+              border: `1px solid ${gradeColor}33`,
+              color: gradeColor,
+              fontWeight: 700,
+              fontSize: '0.85rem',
+              letterSpacing: '0.05em'
+            }}>
+              <Sparkles size={14} />
+              <span>GRADE {grade} • {gradeLabel}</span>
+            </div>
+          </div>
+
+          {/* Speech analytics stats */}
+          <div className="glass-panel flex-col gap-4">
+            <h3 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Volume2 size={16} color="var(--accent-secondary)" />
+              <span>Speech & Pacing Gaps</span>
+            </h3>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              
+              {/* Clarity Box */}
+              <div style={{ background: 'var(--bg-base)', border: '1px solid var(--border-subtle)', padding: '1rem', borderRadius: 'var(--radius-md)' }}>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>CLARITY INDEX</span>
+                <div style={{ fontSize: '1.75rem', fontWeight: 800, color: clarityGrade === 'A' ? '#10b981' : '#f59e0b', marginTop: '0.25rem' }}>
+                  {clarityGrade || 'B'}
+                </div>
+                <p style={{ margin: '0.35rem 0 0 0', fontSize: '0.7rem', color: 'var(--text-muted)', lineHeight: '1.3' }}>
+                  Based on repetition and vocabulary selection.
+                </p>
+              </div>
+
+              {/* Fillers Box */}
+              <div style={{ background: 'var(--bg-base)', border: '1px solid var(--border-subtle)', padding: '1rem', borderRadius: 'var(--radius-md)' }}>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>FILLER WORDS</span>
+                <div style={{ fontSize: '1.75rem', fontWeight: 800, color: (fillerWordsCount || 0) > 6 ? '#ef4444' : '#10b981', marginTop: '0.25rem' }}>
+                  {fillerWordsCount || 0}
+                </div>
+                <p style={{ margin: '0.35rem 0 0 0', fontSize: '0.7rem', color: 'var(--text-muted)', lineHeight: '1.3' }}>
+                  Counts of "like", "um", "basically", "actually".
+                </p>
+              </div>
+
+            </div>
+
+            {/* Answer Depth Bar */}
+            <div style={{ background: 'var(--bg-base)', border: '1px solid var(--border-subtle)', padding: '1rem', borderRadius: 'var(--radius-md)' }}>
+              <div className="flex justify-between items-center" style={{ marginBottom: '0.5rem' }}>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>AVERAGE ANSWER DEPTH</span>
+                <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-primary)' }}>{averageWordCount || 0} words</span>
+              </div>
+              <div style={{ width: '100%', height: '6px', background: 'rgba(255,255,255,0.05)', borderRadius: '3px', overflow: 'hidden' }}>
+                <div style={{ 
+                  width: `${Math.min((averageWordCount || 0) * 1.5, 100)}%`, 
+                  height: '100%', 
+                  background: (averageWordCount || 0) < 35 ? '#ef4444' : 'var(--accent-tertiary)',
+                  borderRadius: '3px'
+                }} />
+              </div>
+              <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.7rem', color: 'var(--text-muted)', lineHeight: '1.3' }}>
+                {(averageWordCount || 0) < 35 ? '⚠️ Short answers detected. Expand technical details.' : '✓ Balanced detail and content depth.'}
+              </p>
+            </div>
+
+          </div>
+
+        </div>
+
+        {/* Right Side: Feedback narrative and suggestions checklist */}
+        <div className="flex-col gap-6">
+          
+          {/* Narrative Summary Card */}
+          <div className="glass-panel flex-col gap-4">
+            <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Trophy size={18} color="var(--accent-primary)" />
+              <span>Executive Feedback</span>
+            </h3>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.925rem', lineHeight: '1.7', margin: 0 }}>
+              {feedback}
+            </p>
+          </div>
+
+          {/* Action Checklist Suggestions */}
+          <div className="glass-panel flex-col gap-4">
+            <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Lightbulb size={18} color="var(--accent-tertiary)" />
+              <span>Recommended Revisions</span>
+            </h3>
+
+            <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              {suggestions.map((s, idx) => (
+                <li key={idx} style={{
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: '0.75rem',
+                  background: 'var(--bg-base)',
+                  border: '1px solid var(--border-subtle)',
+                  padding: '0.75rem 1rem',
+                  borderRadius: 'var(--radius-md)'
+                }}>
+                  <span style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    minWidth: '22px',
+                    height: '22px',
+                    borderRadius: '50%',
+                    background: 'var(--gradient-primary)',
+                    color: 'white',
+                    fontSize: '0.75rem',
+                    fontWeight: 700
+                  }}>
+                    {idx + 1}
+                  </span>
+                  <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                    {s}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+        </div>
+
       </div>
 
-      {/* ── Stats ── */}
-      <div className="flex gap-4" style={{ flexWrap: 'wrap' }}>
-        <div className="glass-panel" style={{ flex: '1 1 200px', textAlign: 'center' }}>
-          <div style={{ fontSize: '2rem', fontWeight: 800, fontFamily: 'var(--font-display)', color: 'var(--accent-primary)' }}>
+      {/* Global Session Statistics Row */}
+      <div className="flex gap-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem' }}>
+        <div className="glass-panel text-center" style={{ padding: '1.25rem' }}>
+          <div style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--accent-primary)', fontFamily: 'var(--font-display)' }}>
             {interviewerMessages.length}
           </div>
-          <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>Questions Asked</div>
+          <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', marginTop: '0.15rem' }}>Questions Asked</div>
         </div>
-        <div className="glass-panel" style={{ flex: '1 1 200px', textAlign: 'center' }}>
-          <div style={{ fontSize: '2rem', fontWeight: 800, fontFamily: 'var(--font-display)', color: 'var(--accent-secondary)' }}>
+
+        <div className="glass-panel text-center" style={{ padding: '1.25rem' }}>
+          <div style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--accent-secondary)', fontFamily: 'var(--font-display)' }}>
             {userMessages.length}
           </div>
-          <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>Your Answers</div>
+          <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', marginTop: '0.15rem' }}>Answers Logged</div>
         </div>
-        <div className="glass-panel" style={{ flex: '1 1 200px', textAlign: 'center' }}>
-          <div style={{ fontSize: '2rem', fontWeight: 800, fontFamily: 'var(--font-display)', color: 'var(--accent-tertiary)' }}>
-            {userMessages.reduce((sum, m) => sum + m.content.split(/\s+/).length, 0)}
+
+        <div className="glass-panel text-center" style={{ padding: '1.25rem' }}>
+          <div style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--accent-tertiary)', fontFamily: 'var(--font-display)' }}>
+            {totalWords}
           </div>
-          <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>Total Words</div>
+          <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', marginTop: '0.15rem' }}>Total Word Count</div>
         </div>
       </div>
 
-      {/* ── Communication & Speech Analytics ── */}
+      {/* Full Conversation Transcript Timeline */}
       <div className="glass-panel flex-col gap-4">
-        <h3 style={{ margin: 0, fontSize: '1.25rem', color: 'var(--accent-secondary)' }}>🎤 Communication & Speech Analytics</h3>
-        <div className="flex gap-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
-          <div style={{ background: 'var(--bg-base)', padding: '1rem', borderRadius: 'var(--radius-md)', textAlign: 'center', border: '1px solid var(--border-subtle)' }}>
-            <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '0.25rem' }}>Clarity Grade</div>
-            <div style={{ fontSize: '2.5rem', fontWeight: 800, color: clarityGrade === 'A' ? '#22c55e' : clarityGrade === 'B' ? '#3b82f6' : clarityGrade === 'C' ? '#f59e0b' : '#ef4444' }}>
-              {clarityGrade || 'B'}
-            </div>
-            <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.75rem', color: 'var(--text-muted)', lineHeight: '1.4' }}>
-              {clarityGrade === 'A' ? 'Excellent clarity!' : clarityGrade === 'B' ? 'Good verbal flow.' : clarityGrade === 'C' ? 'Noticeable filler words.' : 'Heavy filler word density.'}
-            </p>
-          </div>
-          <div style={{ background: 'var(--bg-base)', padding: '1rem', borderRadius: 'var(--radius-md)', textAlign: 'center', border: '1px solid var(--border-subtle)' }}>
-            <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '0.25rem' }}>Filler Words Count</div>
-            <div style={{ fontSize: '2.5rem', fontWeight: 800, color: (fillerWordsCount || 0) > 8 ? '#ef4444' : (fillerWordsCount || 0) > 4 ? '#f59e0b' : '#22c55e' }}>
-              {fillerWordsCount || 0}
-            </div>
-            <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.75rem', color: 'var(--text-muted)', lineHeight: '1.4' }}>
-              Avoid verbal fillers like "um", "like", "basically", "actually".
-            </p>
-          </div>
-          <div style={{ background: 'var(--bg-base)', padding: '1rem', borderRadius: 'var(--radius-md)', textAlign: 'center', border: '1px solid var(--border-subtle)' }}>
-            <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '0.25rem' }}>Avg. Answer Depth</div>
-            <div style={{ fontSize: '2.5rem', fontWeight: 800, color: (averageWordCount || 0) < 30 ? '#ef4444' : '#22c55e' }}>
-              {averageWordCount || 0} <span style={{ fontSize: '1rem', fontWeight: 'normal' }}>wds</span>
-            </div>
-            <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.75rem', color: 'var(--text-muted)', lineHeight: '1.4' }}>
-              {(averageWordCount || 0) < 30 ? 'Short answers. Expand with details.' : 'Detailed explanations.'}
-            </p>
-          </div>
+        <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '0.5rem', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '0.75rem' }}>
+          <MessageSquare size={16} color="var(--accent-primary)" />
+          <span>Interactive Session Transcript</span>
+        </h3>
+        
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxHeight: '420px', overflowY: 'auto', paddingRight: '0.5rem' }}>
+          {(transcript || []).map((msg, idx) => {
+            if (msg.role === 'system') return null;
+            const isAssistant = msg.role === 'assistant';
+            return (
+              <div 
+                key={idx}
+                style={{
+                  alignSelf: isAssistant ? 'flex-start' : 'flex-end',
+                  maxWidth: '85%',
+                  background: isAssistant ? 'rgba(255, 255, 255, 0.02)' : 'var(--gradient-primary)',
+                  border: isAssistant ? '1px solid var(--border-subtle)' : 'none',
+                  borderRadius: 'var(--radius-lg)',
+                  padding: '1rem',
+                  boxShadow: 'var(--shadow-sm)'
+                }}
+              >
+                <strong style={{
+                  display: 'block',
+                  marginBottom: '0.25rem',
+                  fontSize: '0.75rem',
+                  color: isAssistant ? 'var(--accent-tertiary)' : 'rgba(255,255,255,0.8)'
+                }}>
+                  {isAssistant ? '🎤 INTERVIEWER' : '💬 YOU'}
+                </strong>
+                <p style={{ margin: 0, fontSize: '0.85rem', lineHeight: 1.5, color: isAssistant ? 'var(--text-secondary)' : 'white' }}>
+                  {msg.content}
+                </p>
+              </div>
+            );
+          })}
         </div>
       </div>
 
-      {/* ── Transcript ── */}
-      <div className="glass-panel flex-col gap-4">
-        <div className="flex items-center gap-2">
-          <Trophy size={20} style={{ color: 'var(--accent-secondary)' }} />
-          <h3 style={{ margin: 0, fontSize: '1.25rem' }}>Full Transcript</h3>
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxHeight: '500px', overflowY: 'auto', padding: '0.5rem' }}>
-          {(transcript || []).map((msg, idx) => (
-            <div key={idx} style={{
-              padding: '1rem', borderRadius: 'var(--radius-md)',
-              background: msg.role === 'assistant' ? 'var(--bg-elevated)' : 'var(--accent-primary)',
-              marginLeft: msg.role === 'assistant' ? '0' : 'auto',
-              marginRight: msg.role === 'assistant' ? 'auto' : '0',
-              maxWidth: '85%'
-            }}>
-              <strong style={{
-                display: 'block', marginBottom: '0.4rem', fontSize: '0.8rem',
-                color: msg.role === 'assistant' ? 'var(--accent-tertiary)' : 'rgba(255,255,255,0.7)'
-              }}>
-                {msg.role === 'assistant' ? '🎤 Interviewer' : '💬 You'}
-              </strong>
-              <p style={{ margin: 0, lineHeight: 1.6 }}>{msg.content}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* ── Actions ── */}
-      <div className="flex gap-4" style={{ justifyContent: 'center', paddingBottom: '2rem' }}>
-        <button className="btn btn-primary" onClick={() => navigate('/interview')}>
-          <RotateCcw size={16} /> Try Again
+      {/* Bottom Action buttons */}
+      <div className="flex gap-4" style={{ justifyContent: 'center', paddingBottom: '2.5rem' }}>
+        <button 
+          className="btn btn-primary" 
+          onClick={() => navigate('/interview')}
+          style={{ padding: '0.75rem 1.5rem' }}
+        >
+          <RotateCcw size={16} />
+          <span>Restart Interview Simulator</span>
         </button>
-        <button className="btn btn-secondary" onClick={() => navigate('/')}>
-          <ArrowLeft size={16} /> Back to Dashboard
+        <button 
+          className="btn btn-secondary" 
+          onClick={() => navigate('/')}
+          style={{ padding: '0.75rem 1.5rem' }}
+        >
+          <span>Back to Dashboard</span>
         </button>
       </div>
 
