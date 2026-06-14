@@ -125,6 +125,7 @@ a:hover {
   min-height: 100vh;
   position: relative;
   z-index: 1;
+  padding-left: 260px; /* Reserve space for the fixed sidebar */
 }
 
 .sidebar {
@@ -136,9 +137,10 @@ a:hover {
   padding: 1.5rem;
   flex-shrink: 0;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  position: sticky;
+  position: fixed;
+  left: 0;
   top: 0;
-  height: 100vh;
+  bottom: 0;
   z-index: 100;
 }
 
@@ -559,6 +561,7 @@ a:hover {
 @media (max-width: 1024px) {
   .dashboard-layout {
     flex-direction: column;
+    padding-left: 0;
   }
 
   .mobile-header-el {
