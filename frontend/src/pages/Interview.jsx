@@ -195,15 +195,39 @@ const Interview = () => {
     }
   }, [mediaStream, screenStream, cameraOn, screenShare]);
 
+  const mediaStreamRef = useRef(null);
+  const screenStreamRef = useRef(null);
+
+  // Update stream refs dynamically to keep cleanup handlers accurate
+  useEffect(() => {
+    mediaStreamRef.current = mediaStream;
+  }, [mediaStream]);
+
+  useEffect(() => {
+    screenStreamRef.current = screenStream;
+  }, [screenStream]);
+
   // Start webcam when call starts
   useEffect(() => {
     if (history.length > 0 && !mediaStream) {
       startWebcam();
     }
+  }, [history.length, mediaStream]);
+
+  // Clean up all hardware tracks ONLY when the component unmounts
+  useEffect(() => {
     return () => {
-      stopAllTracks();
+      if (mediaStreamRef.current) {
+        mediaStreamRef.current.getTracks().forEach(track => track.stop());
+      }
+      if (screenStreamRef.current) {
+        screenStreamRef.current.getTracks().forEach(track => track.stop());
+      }
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
     };
-  }, [history.length]);
+  }, []);
 
   // Automatically read questions out loud when assistant sends them
   useEffect(() => {
