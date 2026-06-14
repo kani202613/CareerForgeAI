@@ -248,7 +248,8 @@ router.post('/chat', authMiddleware, async (req, res) => {
   }
 });
 
-// End interview anrouter.post('/end', authMiddleware, async (req, res) => {
+// End interview route
+router.post('/end', authMiddleware, async (req, res) => {
   try {
     const { role, history } = req.body;
 
