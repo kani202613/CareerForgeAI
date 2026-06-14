@@ -176,7 +176,8 @@ function atsAnalyze(text) {
   // Keyword stuffing check
   const stuffedKeywords = [];
   techKeywords.forEach(k => {
-    const regex = new RegExp(`\\b${k}\\b`, 'gi');
+    const escaped = k.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+    const regex = new RegExp(`(?<![a-zA-Z0-9])${escaped}(?![a-zA-Z0-9])`, 'gi');
     const matches = (text.match(regex) || []).length;
     if (matches > 5) {
       stuffedKeywords.push(k);

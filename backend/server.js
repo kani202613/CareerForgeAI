@@ -23,7 +23,17 @@ console.log = (...args) => {
 };
 
 console.error = (...args) => {
-  debugLogs.push(`[ERR] ${new Date().toISOString()} - ${args.map(a => typeof a === 'object' ? JSON.stringify(a) : a).join(' ')}`);
+  debugLogs.push(`[ERR] ${new Date().toISOString()} - ${args.map(a => {
+    if (a instanceof Error) return a.stack || a.message;
+    if (typeof a === 'object') {
+      try {
+        return JSON.stringify(a);
+      } catch (e) {
+        return '[Circular Object]';
+      }
+    }
+    return a;
+  }).join(' ')}`);
   if (debugLogs.length > 300) debugLogs.shift();
   originalError.apply(console, args);
 };
