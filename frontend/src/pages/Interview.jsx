@@ -172,12 +172,15 @@ const Interview = () => {
       const cleaned = text.replace(/Click "Disconnect Call"|Click "End & Score"|Click "End Interview"/gi, '');
       const utterance = new SpeechSynthesisUtterance(cleaned);
       const voices = window.speechSynthesis.getVoices();
-      const voice = voices.find(v => 
-        v.name.includes('Google US English') || 
-        v.name.includes('Microsoft David') || 
-        v.name.includes('Natural') || 
-        v.lang.startsWith('en')
-      );
+      const femaleVoiceKeywords = ['zira', 'samantha', 'hazel', 'susan', 'karen', 'victoria', 'female', 'google us english', 'cortana'];
+      let voice = voices.find(v => {
+        const nameLower = v.name.toLowerCase();
+        return femaleVoiceKeywords.some(keyword => nameLower.includes(keyword)) && v.lang.startsWith('en');
+      });
+
+      if (!voice) {
+        voice = voices.find(v => v.lang.startsWith('en'));
+      }
       if (voice) utterance.voice = voice;
       utterance.rate = 0.95;
       window.speechSynthesis.speak(utterance);

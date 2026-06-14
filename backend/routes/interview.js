@@ -199,29 +199,41 @@ router.post('/chat', authMiddleware, async (req, res) => {
 
     // If it isn't a follow-up request, fetch the next question from the bank
     if (!aiResponse) {
-      // Find standard questions that haven't been asked yet
-      const remainingQuestions = questions.filter(q => 
-        !askedQuestionsText.some(asked => asked.includes(q.question))
-      );
-
-      const standardAskedCount = questions.filter(q => 
-        askedQuestionsText.some(asked => asked.includes(q.question))
-      ).length;
-
       const assistantCount = assistantMessages.length;
 
-      if (standardAskedCount >= questions.length) {
-        aiResponse = 'Great, that concludes our interview! Click "Disconnect Call" or "End & Score" to see your evaluation and score.';
-      } else if (recruiterMode && assistantCount > 0 && assistantCount % 2 === 1) {
-        // In recruiter mode, every other question is a tough follow-up
-        const idx = Math.floor(Math.random() * recruiterFollowUps.length);
-        aiResponse = recruiterFollowUps[idx];
+      if (assistantCount === 0) {
+        // Welcome introduction
+        aiResponse = `Hello! Welcome to your mock interview for the ${role} position. I will be conducting your technical assessment today. To start us off, could you please introduce yourself and walk me through your background and technical experience?`;
       } else {
-        if (remainingQuestions.length > 0) {
-          const idx = Math.floor(Math.random() * remainingQuestions.length);
-          aiResponse = remainingQuestions[idx].question;
-        } else {
+        // Find standard questions that haven't been asked yet
+        const remainingQuestions = questions.filter(q => 
+          !askedQuestionsText.some(asked => asked.includes(q.question))
+        );
+
+        const standardAskedCount = questions.filter(q => 
+          askedQuestionsText.some(asked => asked.includes(q.question))
+        ).length;
+
+        if (standardAskedCount >= questions.length) {
           aiResponse = 'Great, that concludes our interview! Click "Disconnect Call" or "End & Score" to see your evaluation and score.';
+        } else if (recruiterMode && assistantCount > 0 && assistantCount % 2 === 1) {
+          // In recruiter mode, every other question is a tough follow-up
+          const idx = Math.floor(Math.random() * recruiterFollowUps.length);
+          aiResponse = recruiterFollowUps[idx];
+        } else {
+          if (remainingQuestions.length > 0) {
+            const idx = Math.floor(Math.random() * remainingQuestions.length);
+            const nextQuestion = remainingQuestions[idx].question;
+            
+            if (assistantCount === 1) {
+              // Transition from introduction to technical question
+              aiResponse = `Thank you for sharing that. Let's transition into the technical assessment. To begin, ${nextQuestion}`;
+            } else {
+              aiResponse = nextQuestion;
+            }
+          } else {
+            aiResponse = 'Great, that concludes our interview! Click "Disconnect Call" or "End & Score" to see your evaluation and score.';
+          }
         }
       }
     }
