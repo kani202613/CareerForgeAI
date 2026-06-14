@@ -143,10 +143,25 @@ router.post('/end', authMiddleware, async (req, res) => {
     // Simple scoring based on answer length, detail, and keyword presence
     const userMessages = history.filter(m => m.role === 'user');
     let totalScore = 0;
+    let totalWords = 0;
+    let totalFillerWords = 0;
+    
+    // List of common verbal filler words
+    const fillerWordsList = ['like', 'basically', 'actually', 'um', 'uh', 'so', 'literally', 'you know'];
 
     userMessages.forEach(msg => {
       const text = msg.content.toLowerCase();
       const words = text.split(/\s+/).filter(Boolean);
+      totalWords += words.length;
+      
+      // Count filler words
+      words.forEach(w => {
+        const cleanWord = w.replace(/[^a-z]/g, '');
+        if (fillerWordsList.includes(cleanWord)) {
+          totalFillerWords++;
+        }
+      });
+
       let msgScore = 0;
 
       // Length score (longer = more detailed, up to 40 pts)
@@ -169,6 +184,19 @@ router.post('/end', authMiddleware, async (req, res) => {
     const avgScore = userMessages.length > 0 ? Math.round(totalScore / userMessages.length) : 0;
     const finalScore = Math.min(100, avgScore);
 
+    // Calculate communication stats
+    const averageWordCount = userMessages.length > 0 ? Math.round(totalWords / userMessages.length) : 0;
+    const fillerDensity = totalFillerWords / (totalWords || 1);
+    
+    let clarityGrade = 'A';
+    if (fillerDensity > 0.08 || averageWordCount < 15) {
+      clarityGrade = 'D';
+    } else if (fillerDensity > 0.05 || averageWordCount < 30) {
+      clarityGrade = 'C';
+    } else if (fillerDensity > 0.02 || averageWordCount < 50) {
+      clarityGrade = 'B';
+    }
+
     // Generate feedback
     let feedback;
     if (finalScore >= 80) {
@@ -186,11 +214,23 @@ router.post('/end', authMiddleware, async (req, res) => {
       role: role,
       score: finalScore,
       feedback: feedback,
-      transcript: history
+      transcript: history,
+      fillerWordsCount: totalFillerWords,
+      averageWordCount: averageWordCount,
+      clarityGrade: clarityGrade
     });
 
     await newInterview.save();
-    res.json({ message: 'Interview completed', result: { score: finalScore, feedback } });
+    res.json({ 
+      message: 'Interview completed', 
+      result: { 
+        score: finalScore, 
+        feedback,
+        fillerWordsCount: totalFillerWords,
+        averageWordCount,
+        clarityGrade
+      } 
+    });
 
   } catch (error) {
     console.error('Interview End Error:', error);

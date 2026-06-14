@@ -267,6 +267,58 @@ function atsAnalyze(text) {
 
   // --- FINAL SCORE INTEGRATION (STRICT & HONEST) ---
   let atsScore = 0;
+  const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+  const highlightedLines = lines.map(line => {
+    const lineLower = line.toLowerCase();
+    
+    // Check contact info
+    if (lineLower.includes('@') || lineLower.includes('linkedin.com') || lineLower.includes('github.com')) {
+      return { text: line, status: 'strength', reason: 'Verified Contact Info: includes critical communication channels.' };
+    }
+    
+    // Check non-standard headers
+    if (lineLower === 'technical qualification') {
+      return { text: line, status: 'warning', reason: "Non-standard section header. Rename this section to 'Skills' or 'Education' to pass ATS parsers." };
+    }
+    if (lineLower === 'academic details' || lineLower === 'academic profile') {
+      return { text: line, status: 'warning', reason: "Non-standard section header. Rename this section to 'Education'." };
+    }
+    
+    // Check standard headers
+    const standardHeaders = ['education', 'experience', 'work experience', 'skills', 'projects', 'summary', 'certifications'];
+    if (standardHeaders.includes(lineLower)) {
+      return { text: line, status: 'header', reason: 'Standard Section Header: easily parsed by ATS.' };
+    }
+    
+    // Check weak passive words
+    const weakWords = ['assisted', 'helped', 'responsible for', 'worked on', 'participated in', 'tasked with'];
+    const foundWeak = weakWords.find(w => lineLower.includes(w));
+    if (foundWeak) {
+      return { 
+        text: line, 
+        status: 'weakness', 
+        reason: `Passive tone: uses weak phrase '${foundWeak}'. Replace with active verbs showing ownership (e.g. 'Engineered', 'Orchestrated', 'Optimized').` 
+      };
+    }
+    
+    // Check metrics (numbers excluding years)
+    const numbers = (line.match(/\b\d+(?:%|\s*percent|x|\s*multiplier|\+)?\b/g) || [])
+      .filter(n => {
+        const val = parseInt(n, 10);
+        return val > 0 && val !== 1 && (val < 1900 || val > 2100);
+      });
+    if (numbers.length > 0) {
+      return { text: line, status: 'strength', reason: `Quantified Metric: demonstrates clear impact with numbers (${numbers.join(', ')}).` };
+    }
+    
+    // Check visual skill ratings
+    if (/[●○★☆■□]/.test(line) || lineLower.includes('5/5') || lineLower.includes('10/10')) {
+      return { text: line, status: 'warning', reason: 'Visual skill rating: ATS scanners read circles/stars/bars as visual noise. Use text-only lists.' };
+    }
+    
+    return { text: line, status: 'neutral', reason: '' };
+  });
+
   if (isExperienced) {
     const formattingWeight = Math.round((formattingScore / 25) * 6 + (structureScore / 10) * 4);
     atsScore = Math.round(keywordScore + projectScore + finalSectionScore + formattingWeight);
@@ -286,6 +338,7 @@ function atsAnalyze(text) {
     extractedSkills,
     candidateProfile,
     warnings,
+    highlightedLines,
     feedback: feedbackSummary,
     strengths: strengths.slice(0, 4),
     improvements: improvements.slice(0, 4),
@@ -329,7 +382,8 @@ router.post('/upload', authMiddleware, upload.single('resume'), async (req, res)
       improvements: analysis.improvements,
       suggestions: analysis.suggestions,
       candidateProfile: analysis.candidateProfile,
-      warnings: analysis.warnings
+      warnings: analysis.warnings,
+      highlightedLines: analysis.highlightedLines
     });
 
     await newResume.save();

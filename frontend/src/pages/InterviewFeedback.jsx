@@ -5,7 +5,7 @@ import { Trophy, Target, TrendingUp, AlertTriangle, ArrowLeft, RotateCcw } from 
 const InterviewFeedback = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { score, feedback, role, transcript } = location.state || {};
+  const { score, feedback, role, transcript, fillerWordsCount, averageWordCount, clarityGrade } = location.state || {};
 
   // If no data, redirect back
   if (!score && score !== 0) {
@@ -153,6 +153,40 @@ const InterviewFeedback = () => {
             {userMessages.reduce((sum, m) => sum + m.content.split(/\s+/).length, 0)}
           </div>
           <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>Total Words</div>
+        </div>
+      </div>
+
+      {/* ── Communication & Speech Analytics ── */}
+      <div className="glass-panel flex-col gap-4">
+        <h3 style={{ margin: 0, fontSize: '1.25rem', color: 'var(--accent-secondary)' }}>🎤 Communication & Speech Analytics</h3>
+        <div className="flex gap-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+          <div style={{ background: 'var(--bg-base)', padding: '1rem', borderRadius: 'var(--radius-md)', textAlign: 'center', border: '1px solid var(--border-subtle)' }}>
+            <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '0.25rem' }}>Clarity Grade</div>
+            <div style={{ fontSize: '2.5rem', fontWeight: 800, color: clarityGrade === 'A' ? '#22c55e' : clarityGrade === 'B' ? '#3b82f6' : clarityGrade === 'C' ? '#f59e0b' : '#ef4444' }}>
+              {clarityGrade || 'B'}
+            </div>
+            <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.75rem', color: 'var(--text-muted)', lineHeight: '1.4' }}>
+              {clarityGrade === 'A' ? 'Excellent clarity!' : clarityGrade === 'B' ? 'Good verbal flow.' : clarityGrade === 'C' ? 'Noticeable filler words.' : 'Heavy filler word density.'}
+            </p>
+          </div>
+          <div style={{ background: 'var(--bg-base)', padding: '1rem', borderRadius: 'var(--radius-md)', textAlign: 'center', border: '1px solid var(--border-subtle)' }}>
+            <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '0.25rem' }}>Filler Words Count</div>
+            <div style={{ fontSize: '2.5rem', fontWeight: 800, color: (fillerWordsCount || 0) > 8 ? '#ef4444' : (fillerWordsCount || 0) > 4 ? '#f59e0b' : '#22c55e' }}>
+              {fillerWordsCount || 0}
+            </div>
+            <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.75rem', color: 'var(--text-muted)', lineHeight: '1.4' }}>
+              Avoid verbal fillers like "um", "like", "basically", "actually".
+            </p>
+          </div>
+          <div style={{ background: 'var(--bg-base)', padding: '1rem', borderRadius: 'var(--radius-md)', textAlign: 'center', border: '1px solid var(--border-subtle)' }}>
+            <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '0.25rem' }}>Avg. Answer Depth</div>
+            <div style={{ fontSize: '2.5rem', fontWeight: 800, color: (averageWordCount || 0) < 30 ? '#ef4444' : '#22c55e' }}>
+              {averageWordCount || 0} <span style={{ fontSize: '1rem', fontWeight: 'normal' }}>wds</span>
+            </div>
+            <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.75rem', color: 'var(--text-muted)', lineHeight: '1.4' }}>
+              {(averageWordCount || 0) < 30 ? 'Short answers. Expand with details.' : 'Detailed explanations.'}
+            </p>
+          </div>
         </div>
       </div>
 

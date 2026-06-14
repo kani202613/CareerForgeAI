@@ -51,7 +51,10 @@ const Interview = () => {
           score: response.data.result.score,
           feedback: response.data.result.feedback,
           role,
-          transcript: history
+          transcript: history,
+          fillerWordsCount: response.data.result.fillerWordsCount,
+          averageWordCount: response.data.result.averageWordCount,
+          clarityGrade: response.data.result.clarityGrade
         }
       });
 

@@ -8,6 +8,7 @@ const ResumeUpload = () => {
   const [result, setResult] = useState(null);
   const { token } = useAuthStore();
   const fileInputRef = useRef(null);
+  const [selectedLine, setSelectedLine] = useState(null);
 
   const handleUpload = async () => {
     if (!file) return;
@@ -163,11 +164,10 @@ const ResumeUpload = () => {
               <div 
                 className="glass-panel" 
                 style={{ 
-                  background: 'rgba(16, 185, 129, 0.05)', 
+                  background: 'rgba(16, 185, 129, 0.03)', 
                   borderLeft: '4px solid #10b981', 
                   padding: '1.25rem', 
-                  borderRadius: 'var(--radius-md)',
-                  transition: 'transform 0.2s ease, box-shadow 0.2s ease'
+                  borderRadius: 'var(--radius-md)'
                 }}
               >
                 <h4 style={{ margin: '0 0 0.75rem 0', color: '#10b981', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.1rem' }}>
@@ -186,11 +186,10 @@ const ResumeUpload = () => {
               <div 
                 className="glass-panel" 
                 style={{ 
-                  background: 'rgba(245, 158, 11, 0.05)', 
+                  background: 'rgba(245, 158, 11, 0.03)', 
                   borderLeft: '4px solid #f59e0b', 
                   padding: '1.25rem', 
-                  borderRadius: 'var(--radius-md)',
-                  transition: 'transform 0.2s ease, box-shadow 0.2s ease'
+                  borderRadius: 'var(--radius-md)'
                 }}
               >
                 <h4 style={{ margin: '0 0 0.75rem 0', color: '#f59e0b', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.1rem' }}>
@@ -209,11 +208,10 @@ const ResumeUpload = () => {
               <div 
                 className="glass-panel" 
                 style={{ 
-                  background: 'rgba(59, 130, 246, 0.05)', 
+                  background: 'rgba(59, 130, 246, 0.03)', 
                   borderLeft: '4px solid #3b82f6', 
                   padding: '1.25rem', 
-                  borderRadius: 'var(--radius-md)',
-                  transition: 'transform 0.2s ease, box-shadow 0.2s ease'
+                  borderRadius: 'var(--radius-md)'
                 }}
               >
                 <h4 style={{ margin: '0 0 0.75rem 0', color: '#3b82f6', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.1rem' }}>
@@ -224,6 +222,116 @@ const ResumeUpload = () => {
                     <li key={idx} style={{ lineHeight: '1.5' }}>{sug}</li>
                   ))}
                 </ul>
+              </div>
+            )}
+
+            {/* Interactive Heatmap & Diagnostics Side-by-Side */}
+            {result.highlightedLines && result.highlightedLines.length > 0 && (
+              <div style={{ 
+                display: 'grid', 
+                gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', 
+                gap: '1.5rem', 
+                marginTop: '1.5rem' 
+              }}>
+                {/* Heatmap */}
+                <div className="glass-panel" style={{ padding: '1.25rem', background: 'var(--bg-surface)' }}>
+                  <h4 style={{ margin: '0 0 0.25rem 0', color: 'var(--accent-primary)', fontSize: '1.1rem' }}>Interactive ATS Heatmap</h4>
+                  <p className="text-muted" style={{ fontSize: '0.8rem', marginBottom: '1rem' }}>Click on any highlighted line below to run ATS code diagnostics.</p>
+                  
+                  <div style={{ 
+                    maxHeight: '400px', 
+                    overflowY: 'auto', 
+                    padding: '1rem', 
+                    background: '#04040c', 
+                    borderRadius: 'var(--radius-md)', 
+                    fontFamily: 'Consolas, Monaco, monospace', 
+                    fontSize: '0.8rem', 
+                    lineHeight: '1.6', 
+                    whiteSpace: 'pre-wrap',
+                    border: '1px solid var(--border-subtle)'
+                  }}>
+                    {result.highlightedLines.map((line, idx) => {
+                      let bgColor = 'transparent';
+                      let borderColor = 'transparent';
+                      let cursor = 'default';
+                      
+                      if (line.status === 'strength') { bgColor = 'rgba(34, 197, 94, 0.05)'; borderColor = '#22c55e'; cursor = 'pointer'; }
+                      if (line.status === 'weakness') { bgColor = 'rgba(245, 158, 11, 0.05)'; borderColor = '#f59e0b'; cursor = 'pointer'; }
+                      if (line.status === 'warning') { bgColor = 'rgba(239, 68, 68, 0.05)'; borderColor = '#ef4444'; cursor = 'pointer'; }
+                      if (line.status === 'header') { bgColor = 'rgba(255, 255, 255, 0.02)'; borderColor = 'rgba(255, 255, 255, 0.1)'; }
+
+                      const isSelected = selectedLine && selectedLine.text === line.text;
+
+                      return (
+                        <div 
+                          key={idx}
+                          onClick={() => line.reason ? setSelectedLine(line) : null}
+                          style={{
+                            background: isSelected ? 'rgba(168, 85, 247, 0.12)' : bgColor,
+                            borderLeft: isSelected ? '3px solid var(--accent-primary)' : `3px solid ${borderColor}`,
+                            padding: '0.2rem 0.5rem',
+                            marginBottom: '2px',
+                            borderRadius: '0 4px 4px 0',
+                            cursor: cursor,
+                            transition: 'background 0.2s ease, border-left 0.2s ease',
+                            fontWeight: line.status === 'header' ? 'bold' : 'normal',
+                            color: line.status === 'header' ? 'var(--text-primary)' : 'var(--text-secondary)'
+                          }}
+                        >
+                          {line.text || ' '}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Diagnostics Panel */}
+                <div className="glass-panel flex-col" style={{ padding: '1.25rem', justifyContent: 'center', minHeight: '300px' }}>
+                  <h4 style={{ margin: '0 0 1rem 0', color: 'var(--accent-secondary)', fontSize: '1.1rem' }}>ATS Line Diagnostics</h4>
+                  {selectedLine ? (
+                    <div className="flex-col gap-4 animate-fade-in" style={{ height: '100%', justifyContent: 'space-between' }}>
+                      <div style={{
+                        background: 'rgba(255, 255, 255, 0.02)',
+                        padding: '1rem',
+                        borderRadius: 'var(--radius-md)',
+                        fontFamily: 'Consolas, Monaco, monospace',
+                        fontSize: '0.8rem',
+                        border: '1px solid var(--border-subtle)',
+                        color: 'var(--text-secondary)',
+                        wordBreak: 'break-word'
+                      }}>
+                        "{selectedLine.text}"
+                      </div>
+                      <div className="flex-col gap-2">
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                          <span style={{
+                            display: 'inline-block',
+                            width: '8px',
+                            height: '8px',
+                            borderRadius: '50%',
+                            background: selectedLine.status === 'strength' ? '#22c55e' : selectedLine.status === 'weakness' ? '#f59e0b' : '#ef4444'
+                          }} />
+                          <strong style={{
+                            color: selectedLine.status === 'strength' ? '#22c55e' : selectedLine.status === 'weakness' ? '#f59e0b' : '#ef4444',
+                            textTransform: 'uppercase',
+                            fontSize: '0.85rem',
+                            letterSpacing: '0.05em'
+                          }}>
+                            {selectedLine.status === 'strength' ? 'Positive Impact' : selectedLine.status === 'weakness' ? 'Grammar / Word Choice Alert' : 'Critical Parser Flag'}
+                          </strong>
+                        </div>
+                        <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', margin: 0, lineHeight: '1.6' }}>
+                          {selectedLine.reason}
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '2rem 1rem' }}>
+                      <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>🔍</div>
+                      <p style={{ margin: 0, fontSize: '0.875rem', lineHeight: '1.5' }}>Select any highlighted line on the left tool to run code rewrite advice.</p>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 
