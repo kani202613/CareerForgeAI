@@ -38,7 +38,7 @@ const ResumeUpload = () => {
 
     try {
       const response = await axios.post(
-        'https://careerforgeai-ucd7.onrender.com/api/resume/upload',
+        '/api/resume/upload',
         formData,
         { headers: { Authorization: `Bearer ${token}` } }
       );

@@ -11,7 +11,7 @@ const useAuthStore = create((set) => ({
   login: async (email, password) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await axios.post('https://careerforgeai-ucd7.onrender.com/api/auth/login', { email, password });
+      const response = await axios.post('/api/auth/login', { email, password });
       const { token, user } = response.data;
       localStorage.setItem('token', token);
       set({ user, token, isAuthenticated: true, isLoading: false });
@@ -23,7 +23,7 @@ const useAuthStore = create((set) => ({
   register: async (name, email, password) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await axios.post('https://careerforgeai-ucd7.onrender.com/api/auth/register', { name, email, password });
+      const response = await axios.post('/api/auth/register', { name, email, password });
       const { token, user } = response.data;
       localStorage.setItem('token', token);
       set({ user, token, isAuthenticated: true, isLoading: false });

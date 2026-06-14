@@ -31,7 +31,7 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get('https://careerforgeai-ucd7.onrender.com/api/user/dashboard', {
+        const response = await axios.get('/api/user/dashboard', {
           headers: { Authorization: `Bearer ${token}` }
         });
         setData(response.data);
