@@ -46,34 +46,36 @@ const Dashboard = () => {
     <div className="flex-col gap-8">
       {/* Welcome Hero Banner */}
       <div className="glass-panel" style={{
-        background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.12) 0%, rgba(217, 70, 239, 0.08) 100%)',
-        border: '1px solid rgba(99, 102, 241, 0.2)',
+        background: 'var(--accent-tertiary)', /* Bauhaus Yellow background */
+        border: '3px solid #000000',
         padding: '2.5rem',
         position: 'relative',
-        overflow: 'hidden'
+        overflow: 'hidden',
+        boxShadow: 'var(--shadow-md)'
       }}>
         <div style={{ position: 'relative', zIndex: 2 }}>
           <div style={{
             display: 'inline-flex',
             alignItems: 'center',
             gap: '0.5rem',
-            background: 'rgba(255, 255, 255, 0.04)',
-            border: '1px solid rgba(255, 255, 255, 0.08)',
+            background: '#000000',
+            border: '2px solid #000000',
             padding: '0.35rem 0.75rem',
-            borderRadius: '1rem',
+            borderRadius: '0px',
             fontSize: '0.8rem',
-            fontWeight: 600,
-            color: 'var(--accent-secondary)',
+            fontWeight: 800,
+            color: '#ffffff',
+            textTransform: 'uppercase',
             marginBottom: '1rem'
           }}>
             <Sparkles size={12} />
             <span>Placement Readiness Activated</span>
           </div>
 
-          <h2 style={{ fontSize: '2.25rem', fontWeight: 800, marginBottom: '0.75rem', fontFamily: 'var(--font-display)' }}>
-            Forge Your Way to <span className="text-gradient">Success</span>, {user?.name || 'Student'}
+          <h2 style={{ fontSize: '2.25rem', fontWeight: 800, marginBottom: '0.75rem', fontFamily: 'var(--font-display)', color: '#000000' }}>
+            Forge Your Way to <span style={{ color: 'var(--accent-primary)', textDecoration: 'underline' }}>Success</span>, {user?.name || 'Student'}
           </h2>
-          <p className="text-secondary" style={{ maxWidth: '680px', fontSize: '0.95rem', lineHeight: 1.6, margin: 0 }}>
+          <p style={{ maxWidth: '680px', fontSize: '0.95rem', lineHeight: 1.6, margin: 0, color: '#000000', fontWeight: 500 }}>
             Run strict ATS document audits and voice communication analytics to identify keyword gaps. Get immediate diagnostic results tailored to senior developer expectations.
           </p>
         </div>
@@ -81,7 +83,7 @@ const Dashboard = () => {
         {/* Decorative Grid Overlay */}
         <div style={{
           position: 'absolute', top: 0, right: 0, bottom: 0, left: 0,
-          backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.015) 1px, transparent 1px)',
+          backgroundImage: 'radial-gradient(circle, rgba(0,0,0,0.03) 1px, transparent 1px)',
           backgroundSize: '16px 16px', pointerEvents: 'none'
         }} />
       </div>
@@ -92,7 +94,7 @@ const Dashboard = () => {
         {/* ATS Score Card */}
         <div className="glass-panel glass-panel-hover flex-col gap-4">
           <div className="flex items-center justify-between">
-            <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', fontWeight: 600 }}>STRICT ATS MATCH</span>
+            <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', fontWeight: 700 }}>STRICT ATS MATCH</span>
             <FileText size={18} color="var(--accent-primary)" />
           </div>
           <div>
@@ -103,8 +105,8 @@ const Dashboard = () => {
               <span style={{ fontSize: '1rem', color: 'var(--text-muted)' }}>/100</span>
             </div>
             {/* Progress line */}
-            <div style={{ width: '100%', height: '4px', background: 'var(--bg-base)', borderRadius: '2px', marginTop: '0.75rem', overflow: 'hidden' }}>
-              <div style={{ width: `${data.atsScore || 0}%`, height: '100%', background: 'var(--gradient-primary)', borderRadius: '2px' }} />
+            <div style={{ width: '100%', height: '10px', background: '#ffffff', border: '2px solid #000000', borderRadius: '0px', marginTop: '0.75rem', overflow: 'hidden' }}>
+              <div style={{ width: `${data.atsScore || 0}%`, height: '100%', background: 'var(--accent-primary)', borderRadius: '0px' }} />
             </div>
           </div>
           <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: 0 }}>
@@ -115,7 +117,7 @@ const Dashboard = () => {
         {/* Interview Score Card */}
         <div className="glass-panel glass-panel-hover flex-col gap-4">
           <div className="flex items-center justify-between">
-            <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', fontWeight: 600 }}>LAST MOCK GRADE</span>
+            <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', fontWeight: 700 }}>LAST MOCK GRADE</span>
             <Award size={18} color="var(--accent-secondary)" />
           </div>
           <div>
@@ -126,8 +128,8 @@ const Dashboard = () => {
               <span style={{ fontSize: '1rem', color: 'var(--text-muted)' }}>/100</span>
             </div>
             {/* Progress line */}
-            <div style={{ width: '100%', height: '4px', background: 'var(--bg-base)', borderRadius: '2px', marginTop: '0.75rem', overflow: 'hidden' }}>
-              <div style={{ width: `${data.interviewScore || 0}%`, height: '100%', background: 'var(--accent-secondary)', borderRadius: '2px' }} />
+            <div style={{ width: '100%', height: '10px', background: '#ffffff', border: '2px solid #000000', borderRadius: '0px', marginTop: '0.75rem', overflow: 'hidden' }}>
+              <div style={{ width: `${data.interviewScore || 0}%`, height: '100%', background: 'var(--accent-secondary)', borderRadius: '0px' }} />
             </div>
           </div>
           <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: 0 }}>
@@ -138,7 +140,7 @@ const Dashboard = () => {
         {/* Readiness Meter Card */}
         <div className="glass-panel glass-panel-hover flex-col gap-4">
           <div className="flex items-center justify-between">
-            <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', fontWeight: 600 }}>READINESS INDEX</span>
+            <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', fontWeight: 700 }}>READINESS INDEX</span>
             <TrendingUp size={18} color="var(--accent-tertiary)" />
           </div>
           <div>
@@ -148,8 +150,8 @@ const Dashboard = () => {
               </span>
             </div>
             {/* Progress line */}
-            <div style={{ width: '100%', height: '4px', background: 'var(--bg-base)', borderRadius: '2px', marginTop: '0.75rem', overflow: 'hidden' }}>
-              <div style={{ width: `${data.placementReadiness || 0}%`, height: '100%', background: 'linear-gradient(135deg, #14b8a6, #3b82f6)', borderRadius: '2px' }} />
+            <div style={{ width: '100%', height: '10px', background: '#ffffff', border: '2px solid #000000', borderRadius: '0px', marginTop: '0.75rem', overflow: 'hidden' }}>
+              <div style={{ width: `${data.placementReadiness || 0}%`, height: '100%', background: 'var(--accent-primary)', borderRadius: '0px' }} />
             </div>
           </div>
           <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: 0 }}>
@@ -167,7 +169,7 @@ const Dashboard = () => {
             <TrendingUp size={16} color="var(--accent-primary)" />
             <span>ATS Score History</span>
           </h3>
-          <div style={{ position: 'relative', height: '160px', background: 'rgba(0,0,0,0.1)', borderRadius: 'var(--radius-md)', padding: '1rem 0.5rem 0.5rem 0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ position: 'relative', height: '160px', background: '#ffffff', border: '2px solid #000000', borderRadius: '0px', boxShadow: 'var(--shadow-sm)', padding: '1rem 0.5rem 0.5rem 0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             {data.resumeHistory && data.resumeHistory.length > 0 ? (
               (() => {
                 const width = 400;
@@ -181,31 +183,20 @@ const Dashboard = () => {
                 const pathD = points.length > 1 
                   ? `M ${points.map(p => `${p.x} ${p.y}`).join(' L ')}`
                   : '';
-                
-                const areaD = points.length > 1
-                  ? `${pathD} L ${points[points.length - 1].x} ${height - 10} L ${points[0].x} ${height - 10} Z`
-                  : '';
 
                 return (
                   <svg width="100%" height="100%" viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none">
-                    <defs>
-                      <linearGradient id="chartAreaGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%" stopColor="var(--accent-primary)" stopOpacity="0.2" />
-                        <stop offset="100%" stopColor="var(--accent-primary)" stopOpacity="0.0" />
-                      </linearGradient>
-                    </defs>
-                    <line x1="10" y1="20" x2={width - 10} y2="20" stroke="rgba(255,255,255,0.03)" strokeWidth="1" />
-                    <line x1="10" y1="50" x2={width - 10} y2="50" stroke="rgba(255,255,255,0.03)" strokeWidth="1" />
-                    <line x1="10" y1="80" x2={width - 10} y2="80" stroke="rgba(255,255,255,0.03)" strokeWidth="1" />
-                    <line x1="10" y1="110" x2={width - 10} y2="110" stroke="rgba(255,255,255,0.03)" strokeWidth="1" />
+                    <line x1="10" y1="20" x2={width - 10} y2="20" stroke="#e6e6e2" strokeWidth="1" />
+                    <line x1="10" y1="50" x2={width - 10} y2="50" stroke="#e6e6e2" strokeWidth="1" />
+                    <line x1="10" y1="80" x2={width - 10} y2="80" stroke="#e6e6e2" strokeWidth="1" />
+                    <line x1="10" y1="110" x2={width - 10} y2="110" stroke="#e6e6e2" strokeWidth="1" />
 
-                    {points.length > 1 && <path d={areaD} fill="url(#chartAreaGrad)" />}
-                    {points.length > 1 && <path d={pathD} fill="none" stroke="var(--accent-primary)" strokeWidth="3" strokeLinecap="round" />}
+                    {points.length > 1 && <path d={pathD} fill="none" stroke="var(--accent-primary)" strokeWidth="3" strokeLinecap="square" />}
 
                     {points.map((p, idx) => (
                       <g key={idx}>
-                        <circle cx={p.x} cy={p.y} r="5" fill="var(--bg-surface)" stroke="var(--accent-primary)" strokeWidth="2" />
-                        <text x={p.x} y={p.y - 10} fill="var(--text-primary)" fontSize="8" fontWeight="700" textAnchor="middle">
+                        <rect x={p.x - 4} y={p.y - 4} width="8" height="8" fill="var(--accent-tertiary)" stroke="#000000" strokeWidth="2" />
+                        <text x={p.x} y={p.y - 10} fill="var(--text-primary)" fontSize="8" fontWeight="800" textAnchor="middle">
                           {p.score}%
                         </text>
                       </g>
@@ -225,7 +216,7 @@ const Dashboard = () => {
             <Award size={16} color="var(--accent-secondary)" />
             <span>Interview Performance Trend</span>
           </h3>
-          <div style={{ position: 'relative', height: '160px', background: 'rgba(0,0,0,0.1)', borderRadius: 'var(--radius-md)', padding: '1rem 0.5rem 0.5rem 0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ position: 'relative', height: '160px', background: '#ffffff', border: '2px solid #000000', borderRadius: '0px', boxShadow: 'var(--shadow-sm)', padding: '1rem 0.5rem 0.5rem 0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             {data.interviewHistory && data.interviewHistory.length > 0 ? (
               (() => {
                 const width = 400;
@@ -235,10 +226,10 @@ const Dashboard = () => {
 
                 return (
                   <svg width="100%" height="100%" viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none">
-                    <line x1="10" y1="20" x2={width - 10} y2="20" stroke="rgba(255,255,255,0.03)" strokeWidth="1" />
-                    <line x1="10" y1="50" x2={width - 10} y2="50" stroke="rgba(255,255,255,0.03)" strokeWidth="1" />
-                    <line x1="10" y1="80" x2={width - 10} y2="80" stroke="rgba(255,255,255,0.03)" strokeWidth="1" />
-                    <line x1="10" y1="110" x2={width - 10} y2="110" stroke="rgba(255,255,255,0.03)" strokeWidth="1" />
+                    <line x1="10" y1="20" x2={width - 10} y2="20" stroke="#e6e6e2" strokeWidth="1" />
+                    <line x1="10" y1="50" x2={width - 10} y2="50" stroke="#e6e6e2" strokeWidth="1" />
+                    <line x1="10" y1="80" x2={width - 10} y2="80" stroke="#e6e6e2" strokeWidth="1" />
+                    <line x1="10" y1="110" x2={width - 10} y2="110" stroke="#e6e6e2" strokeWidth="1" />
 
                     {data.interviewHistory.map((item, idx) => {
                       const groupX = 20 + idx * colWidth + (colWidth - 30) / 2;
@@ -254,7 +245,8 @@ const Dashboard = () => {
                             width="8" 
                             height={barH_overall} 
                             fill="var(--accent-secondary)" 
-                            rx="2"
+                            stroke="#000000"
+                            strokeWidth="1.5"
                           />
                           <rect 
                             x={groupX + 10} 
@@ -262,7 +254,8 @@ const Dashboard = () => {
                             width="8" 
                             height={barH_tech} 
                             fill="var(--accent-tertiary)" 
-                            rx="2"
+                            stroke="#000000"
+                            strokeWidth="1.5"
                           />
                           <rect 
                             x={groupX + 20} 
@@ -270,9 +263,10 @@ const Dashboard = () => {
                             width="8" 
                             height={barH_comm} 
                             fill="var(--accent-primary)" 
-                            rx="2"
+                            stroke="#000000"
+                            strokeWidth="1.5"
                           />
-                          <text x={groupX + 14} y={height - 5} fill="var(--text-muted)" fontSize="7" textAnchor="middle">
+                          <text x={groupX + 14} y={height - 5} fill="var(--text-muted)" fontSize="7" fontWeight="bold" textAnchor="middle">
                             Run {idx + 1}
                           </text>
                           <text x={groupX + 14} y={height - 25 - Math.max(barH_overall, barH_tech, barH_comm)} fill="var(--text-primary)" fontSize="7" fontWeight="bold" textAnchor="middle">
@@ -299,18 +293,18 @@ const Dashboard = () => {
           <div className="flex-col gap-2" style={{ height: '160px', overflowY: 'auto' }}>
             {data.missingSkills && data.missingSkills.length > 0 ? (
               <>
-                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>DETECTED SKILL GAPS:</span>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 700 }}>DETECTED SKILL GAPS:</span>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginBottom: '0.5rem' }}>
                   {data.missingSkills.slice(0, 5).map(sk => (
-                    <span key={sk} style={{ background: 'rgba(217, 70, 239, 0.08)', color: 'var(--accent-secondary)', border: '1px solid rgba(217, 70, 239, 0.15)', padding: '0.2rem 0.5rem', borderRadius: '0.5rem', fontSize: '0.75rem', fontWeight: 600 }}>
+                    <span key={sk} style={{ background: 'var(--accent-tertiary)', color: '#000000', border: '2px solid #000000', padding: '0.2rem 0.5rem', borderRadius: '0px', fontSize: '0.75rem', fontWeight: 700 }}>
                       {sk}
                     </span>
                   ))}
                 </div>
                 {data.activeRoadmap && data.activeRoadmap.length > 0 && (
-                  <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '0.5rem' }}>
-                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>ACTIVE ROADMAP:</span>
-                    <p style={{ margin: '0.15rem 0 0 0', fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
+                  <div style={{ borderTop: '2px solid var(--border-subtle)', paddingTop: '0.5rem' }}>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 700 }}>ACTIVE ROADMAP:</span>
+                    <p style={{ margin: '0.15rem 0 0 0', fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 700 }}>
                       {data.activeRoadmap[0].week} • {data.activeRoadmap[0].topic}
                     </p>
                     <p style={{ margin: '0.15rem 0 0 0', fontSize: '0.75rem', color: 'var(--text-muted)', lineHeight: 1.4 }}>
@@ -336,7 +330,7 @@ const Dashboard = () => {
         <div className="flex-col gap-4">
           {/* Action 1: Resume Upload */}
           <div className="glass-panel glass-panel-hover flex-col gap-4" style={{ padding: '1.75rem' }}>
-            <div style={{ background: 'rgba(99, 102, 241, 0.1)', color: 'var(--accent-primary)', width: '42px', height: '42px', borderRadius: '0.5rem', display: 'flex', alignItems: 'center', justifyCenter: 'center', justifyContent: 'center' }}>
+            <div style={{ background: 'var(--accent-primary)', color: '#ffffff', width: '42px', height: '42px', border: '2px solid #000000', borderRadius: '0px', display: 'flex', alignItems: 'center', justifyCenter: 'center', justifyContent: 'center' }}>
               <FileText size={22} />
             </div>
             <div>
@@ -357,7 +351,7 @@ const Dashboard = () => {
 
           {/* Action 2: Mock Interview */}
           <div className="glass-panel glass-panel-hover flex-col gap-4" style={{ padding: '1.75rem' }}>
-            <div style={{ background: 'rgba(217, 70, 239, 0.1)', color: 'var(--accent-secondary)', width: '42px', height: '42px', borderRadius: '0.5rem', display: 'flex', alignItems: 'center', justifyCenter: 'center', justifyContent: 'center' }}>
+            <div style={{ background: 'var(--accent-secondary)', color: '#ffffff', width: '42px', height: '42px', border: '2px solid #000000', borderRadius: '0px', display: 'flex', alignItems: 'center', justifyCenter: 'center', justifyContent: 'center' }}>
               <MessageSquare size={22} />
             </div>
             <div>

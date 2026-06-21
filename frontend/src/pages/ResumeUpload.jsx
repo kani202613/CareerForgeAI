@@ -99,41 +99,40 @@ const ResumeUpload = () => {
           <div 
             onClick={() => fileInputRef.current.click()}
             style={{
-              border: '2px dashed var(--border-strong)',
-              borderRadius: 'var(--radius-lg)',
+              border: '3px dashed #000000',
+              borderRadius: '0px',
               padding: '3rem 2rem',
               textAlign: 'center',
               cursor: 'pointer',
-              background: 'rgba(255, 255, 255, 0.01)',
-              transition: 'all 0.2s ease',
+              background: '#ffffff',
+              transition: 'all 0.15s ease',
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
               gap: '1rem',
             }}
             onMouseEnter={e => {
-              e.currentTarget.style.borderColor = 'var(--accent-primary)';
-              e.currentTarget.style.background = 'rgba(99, 102, 241, 0.03)';
+              e.currentTarget.style.background = 'var(--bg-base)';
             }}
             onMouseLeave={e => {
-              e.currentTarget.style.borderColor = 'var(--border-strong)';
-              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.01)';
+              e.currentTarget.style.background = '#ffffff';
             }}
           >
             <div style={{
               width: '3.5rem',
               height: '3.5rem',
-              borderRadius: '50%',
-              background: 'rgba(99, 102, 241, 0.1)',
+              borderRadius: '0px',
+              border: '2px solid #000000',
+              background: 'var(--accent-primary)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              color: 'var(--accent-primary)'
+              color: '#ffffff'
             }}>
               <UploadCloud size={24} />
             </div>
             <div>
-              <div style={{ fontWeight: '600', fontSize: '1rem', color: 'var(--text-primary)', marginBottom: '0.25rem' }}>
+              <div style={{ fontWeight: '800', fontSize: '1rem', color: 'var(--text-primary)', marginBottom: '0.25rem', textTransform: 'uppercase' }}>
                 {file ? file.name : 'Choose Resume PDF'}
               </div>
               <div style={{ fontSize: '0.825rem', color: 'var(--text-muted)' }}>
@@ -145,7 +144,7 @@ const ResumeUpload = () => {
 
         {/* Target Job Description Optional Textarea */}
         <div className="input-group mb-6">
-          <label className="input-label mb-2" style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
+          <label className="input-label mb-2" style={{ display: 'block', fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-secondary)' }}>
             Target Job Description (Optional)
           </label>
           <textarea
@@ -156,11 +155,11 @@ const ResumeUpload = () => {
             rows={4}
             style={{
               width: '100%',
-              background: 'rgba(0, 0, 0, 0.2)',
-              border: '1px solid var(--border-subtle)',
-              borderRadius: 'var(--radius-md)',
+              background: '#ffffff',
+              border: '2px solid #000000',
+              borderRadius: '0px',
               padding: '0.75rem',
-              color: 'var(--text-primary)',
+              color: '#000000',
               fontSize: '0.85rem',
               fontFamily: 'inherit',
               resize: 'vertical',
@@ -186,18 +185,20 @@ const ResumeUpload = () => {
           <div className="flex gap-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.5rem' }}>
             <div className="glass-panel flex items-center justify-between" style={{ padding: '1.5rem' }}>
               <div>
-                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>Target Profile</span>
-                <h4 style={{ fontSize: '1.15rem', color: 'var(--text-primary)', margin: '0.25rem 0 0 0' }}>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase' }}>Target Profile</span>
+                <h4 style={{ fontSize: '1.15rem', color: 'var(--text-primary)', margin: '0.25rem 0 0 0', fontWeight: 800 }}>
                   {result.candidateProfile || 'Fresher'}
                 </h4>
               </div>
               <span style={{ 
-                background: 'rgba(99, 102, 241, 0.1)', 
-                color: 'var(--accent-primary)',
+                background: 'var(--accent-primary)', 
+                color: '#ffffff',
+                border: '2px solid #000000',
                 padding: '0.4rem 0.8rem',
-                borderRadius: '0.5rem',
+                borderRadius: '0px',
                 fontSize: '0.75rem',
-                fontWeight: '600'
+                fontWeight: 800,
+                textTransform: 'uppercase'
               }}>
                 Detected
               </span>
@@ -205,42 +206,42 @@ const ResumeUpload = () => {
 
             <div className="glass-panel flex items-center justify-between" style={{ padding: '1.5rem' }}>
               <div>
-                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>Overall Rating</span>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase' }}>Overall Rating</span>
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.15rem', marginTop: '0.15rem' }}>
                   <span style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--text-primary)' }}>{result.resumeScore}</span>
                   <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>/100</span>
                 </div>
               </div>
-              <CheckCircle size={24} color="var(--accent-tertiary)" />
+              <CheckCircle size={24} color="var(--accent-primary)" />
             </div>
 
             <div className="glass-panel flex items-center justify-between" style={{ padding: '1.5rem' }}>
               <div>
-                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>Strict ATS Match</span>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase' }}>Strict ATS Match</span>
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.15rem', marginTop: '0.15rem' }}>
                   <span style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--accent-secondary)' }}>{result.atsScore}</span>
                   <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>%</span>
                 </div>
               </div>
-              <AlertTriangle size={24} color="#f59e0b" />
+              <AlertTriangle size={24} color="var(--accent-tertiary)" />
             </div>
           </div>
 
           {/* Skill Tag Deck */}
           <div className="glass-panel" style={{ padding: '1.5rem' }}>
-            <h4 style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: 600, textTransform: 'uppercase', marginBottom: '0.75rem' }}>
+            <h4 style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '0.75rem' }}>
               Extracted Technical Keywords ({result.extractedSkills?.length || 0})
             </h4>
             <div className="flex gap-2" style={{ flexWrap: 'wrap' }}>
               {result.extractedSkills?.map(skill => (
                 <span key={skill} style={{ 
-                  background: 'var(--bg-base)', 
-                  color: 'var(--text-secondary)',
+                  background: 'var(--accent-tertiary)', 
+                  color: '#000000',
                   padding: '0.3rem 0.8rem', 
-                  borderRadius: '1rem', 
+                  borderRadius: '0px', 
                   fontSize: '0.825rem',
-                  border: '1px solid var(--border-subtle)',
-                  fontWeight: 500
+                  border: '2px solid #000000',
+                  fontWeight: 700
                 }}>
                   {skill}
                 </span>
@@ -258,16 +259,16 @@ const ResumeUpload = () => {
             
             {/* Left: Reconstructed PDF A4 Paper Sheet */}
             <div className="flex-col gap-2">
-              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', paddingLeft: '0.25rem' }}>
+              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', paddingLeft: '0.25rem' }}>
                 Interactive Document Canvas (Reconstructed Lines)
               </span>
               <div 
                 style={{
                   background: 'var(--bg-surface)',
                   padding: '2.5rem 1.5rem',
-                  borderRadius: 'var(--radius-xl)',
-                  border: '1px solid var(--border-subtle)',
-                  boxShadow: 'var(--shadow-lg)'
+                  borderRadius: '0px',
+                  border: '3px solid #000000',
+                  boxShadow: 'var(--shadow-md)'
                 }}
               >
                 <div className="resume-paper">
@@ -423,16 +424,18 @@ const ResumeUpload = () => {
                 {activeTab === 'critical' && (
                   <div className="flex-col gap-4 animate-fade-in">
                     <div style={{
-                      background: 'rgba(239, 68, 68, 0.05)',
-                      border: '1px solid rgba(239, 68, 68, 0.15)',
+                      background: 'var(--accent-primary)',
+                      border: '2px solid #000000',
                       padding: '1rem',
-                      borderRadius: 'var(--radius-md)',
+                      borderRadius: '0px',
                       display: 'flex',
                       alignItems: 'flex-start',
-                      gap: '0.75rem'
+                      gap: '0.75rem',
+                      color: '#ffffff',
+                      boxShadow: 'var(--shadow-sm)'
                     }}>
-                      <Info size={18} color="#ef4444" style={{ marginTop: '0.15rem', flexShrink: 0 }} />
-                      <p style={{ margin: 0, fontSize: '0.825rem', color: 'var(--text-secondary)', lineHeight: '1.4' }}>
+                      <Info size={18} color="#ffffff" style={{ marginTop: '0.15rem', flexShrink: 0 }} />
+                      <p style={{ margin: 0, fontSize: '0.825rem', color: '#ffffff', lineHeight: '1.4', fontWeight: 600 }}>
                         These formatting structural elements may cause real parser scripts to skip sections or misread your history details.
                       </p>
                     </div>
@@ -443,13 +446,14 @@ const ResumeUpload = () => {
                           display: 'flex',
                           alignItems: 'flex-start',
                           gap: '0.75rem',
-                          background: 'rgba(255, 255, 255, 0.01)',
-                          border: '1px solid var(--border-subtle)',
+                          background: '#ffffff',
+                          border: '2px solid #000000',
                           padding: '1rem',
-                          borderRadius: 'var(--radius-md)'
+                          borderRadius: '0px',
+                          boxShadow: 'var(--shadow-sm)'
                         }}>
                           <span style={{ fontSize: '1rem', color: '#ef4444', marginTop: '-0.1rem' }}>🚫</span>
-                          <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                          <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', lineHeight: 1.5, fontWeight: 500 }}>
                             {w}
                           </span>
                         </li>
@@ -467,13 +471,14 @@ const ResumeUpload = () => {
                           display: 'flex',
                           alignItems: 'flex-start',
                           gap: '0.75rem',
-                          background: 'rgba(16, 185, 129, 0.02)',
-                          border: '1px solid rgba(16, 185, 129, 0.1)',
+                          background: '#ffffff',
+                          border: '2px solid #000000',
                           padding: '1rem',
-                          borderRadius: 'var(--radius-md)'
+                          borderRadius: '0px',
+                          boxShadow: 'var(--shadow-sm)'
                         }}>
-                          <CheckCircle size={16} color="var(--accent-tertiary)" style={{ marginTop: '0.15rem', flexShrink: 0 }} />
-                          <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                          <CheckCircle size={16} color="var(--accent-primary)" style={{ marginTop: '0.15rem', flexShrink: 0 }} />
+                          <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', lineHeight: 1.5, fontWeight: 500 }}>
                             {s}
                           </span>
                         </li>
@@ -495,12 +500,12 @@ const ResumeUpload = () => {
                         {/* AI Weaknesses */}
                         {result.aiFeedback.weaknesses?.length > 0 && (
                           <div className="flex-col gap-2">
-                            <h5 style={{ fontSize: '0.8rem', color: 'var(--accent-secondary)', fontWeight: 600, textTransform: 'uppercase', margin: 0, letterSpacing: '0.05em' }}>Identified Gaps</h5>
+                            <h5 style={{ fontSize: '0.8rem', color: 'var(--accent-primary)', fontWeight: 800, textTransform: 'uppercase', margin: 0, letterSpacing: '0.05em' }}>Identified Gaps</h5>
                             <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                               {result.aiFeedback.weaknesses.map((w, idx) => (
-                                <li key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', background: 'rgba(239, 68, 68, 0.02)', border: '1px solid rgba(239, 68, 68, 0.08)', padding: '0.75rem', borderRadius: 'var(--radius-md)' }}>
+                                <li key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', background: '#ffffff', border: '2px solid #000000', padding: '0.75rem', borderRadius: '0px', boxShadow: 'var(--shadow-sm)' }}>
                                   <AlertCircle size={14} color="#ef4444" style={{ marginTop: '0.15rem', flexShrink: 0 }} />
-                                  <span style={{ fontSize: '0.825rem', color: 'var(--text-secondary)', lineHeight: 1.4 }}>{w}</span>
+                                  <span style={{ fontSize: '0.825rem', color: 'var(--text-secondary)', lineHeight: 1.4, fontWeight: 500 }}>{w}</span>
                                 </li>
                               ))}
                             </ul>
@@ -510,12 +515,12 @@ const ResumeUpload = () => {
                         {/* AI Suggestions */}
                         {result.aiFeedback.suggestions?.length > 0 && (
                           <div className="flex-col gap-2">
-                            <h5 style={{ fontSize: '0.8rem', color: 'var(--accent-primary)', fontWeight: 600, textTransform: 'uppercase', margin: 0, letterSpacing: '0.05em' }}>ATS Suggestions</h5>
+                            <h5 style={{ fontSize: '0.8rem', color: 'var(--accent-secondary)', fontWeight: 800, textTransform: 'uppercase', margin: 0, letterSpacing: '0.05em' }}>ATS Suggestions</h5>
                             <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                               {result.aiFeedback.suggestions.map((s, idx) => (
-                                <li key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', background: 'rgba(255, 255, 255, 0.01)', border: '1px solid var(--border-subtle)', padding: '0.75rem', borderRadius: 'var(--radius-md)' }}>
+                                <li key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', background: '#ffffff', border: '2px solid #000000', padding: '0.75rem', borderRadius: '0px', boxShadow: 'var(--shadow-sm)' }}>
                                   <ChevronRight size={14} color="var(--accent-primary)" style={{ marginTop: '0.15rem', flexShrink: 0 }} />
-                                  <span style={{ fontSize: '0.825rem', color: 'var(--text-secondary)', lineHeight: 1.4 }}>{s}</span>
+                                  <span style={{ fontSize: '0.825rem', color: 'var(--text-secondary)', lineHeight: 1.4, fontWeight: 500 }}>{s}</span>
                                 </li>
                               ))}
                             </ul>
@@ -525,12 +530,12 @@ const ResumeUpload = () => {
                         {/* AI Improvement Plan */}
                         {result.aiFeedback.improvementPlan?.length > 0 && (
                           <div className="flex-col gap-2">
-                            <h5 style={{ fontSize: '0.8rem', color: 'var(--accent-tertiary)', fontWeight: 600, textTransform: 'uppercase', margin: 0, letterSpacing: '0.05em' }}>Action Plan</h5>
+                            <h5 style={{ fontSize: '0.8rem', color: 'var(--accent-primary)', fontWeight: 800, textTransform: 'uppercase', margin: 0, letterSpacing: '0.05em' }}>Action Plan</h5>
                             <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                               {result.aiFeedback.improvementPlan.map((p, idx) => (
-                                <li key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', background: 'rgba(16, 185, 129, 0.02)', border: '1px solid rgba(16, 185, 129, 0.08)', padding: '0.75rem', borderRadius: 'var(--radius-md)' }}>
+                                <li key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', background: '#ffffff', border: '2px solid #000000', padding: '0.75rem', borderRadius: '0px', boxShadow: 'var(--shadow-sm)' }}>
                                   <CheckCircle size={14} color="var(--accent-tertiary)" style={{ marginTop: '0.15rem', flexShrink: 0 }} />
-                                  <span style={{ fontSize: '0.825rem', color: 'var(--text-secondary)', lineHeight: 1.4 }}>{p}</span>
+                                  <span style={{ fontSize: '0.825rem', color: 'var(--text-secondary)', lineHeight: 1.4, fontWeight: 500 }}>{p}</span>
                                 </li>
                               ))}
                             </ul>
@@ -544,13 +549,14 @@ const ResumeUpload = () => {
                             display: 'flex',
                             alignItems: 'flex-start',
                             gap: '0.75rem',
-                            background: 'rgba(255, 255, 255, 0.01)',
-                            border: '1px solid var(--border-subtle)',
+                            background: '#ffffff',
+                            border: '2px solid #000000',
                             padding: '1rem',
-                            borderRadius: 'var(--radius-md)'
+                            borderRadius: '0px',
+                            boxShadow: 'var(--shadow-sm)'
                           }}>
                             <ChevronRight size={16} color="var(--accent-primary)" style={{ marginTop: '0.15rem', flexShrink: 0 }} />
-                            <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                            <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', lineHeight: 1.5, fontWeight: 500 }}>
                               {item}
                             </span>
                           </li>
@@ -564,21 +570,23 @@ const ResumeUpload = () => {
                 {activeTab === 'roadmap' && result.learningRoadmap && (
                   <div className="flex-col gap-6 animate-fade-in">
                     <div style={{
-                      background: 'rgba(99, 102, 241, 0.05)',
-                      border: '1px solid rgba(99, 102, 241, 0.15)',
+                      background: 'var(--accent-secondary)',
+                      border: '2px solid #000000',
                       padding: '1rem',
-                      borderRadius: 'var(--radius-md)',
+                      borderRadius: '0px',
                       display: 'flex',
                       alignItems: 'flex-start',
-                      gap: '0.75rem'
+                      gap: '0.75rem',
+                      color: '#ffffff',
+                      boxShadow: 'var(--shadow-sm)'
                     }}>
-                      <Sparkles size={18} color="var(--accent-primary)" style={{ marginTop: '0.15rem', flexShrink: 0 }} />
-                      <p style={{ margin: 0, fontSize: '0.825rem', color: 'var(--text-secondary)', lineHeight: '1.4' }}>
+                      <Sparkles size={18} color="#ffffff" style={{ marginTop: '0.15rem', flexShrink: 0 }} />
+                      <p style={{ margin: 0, fontSize: '0.825rem', color: '#ffffff', lineHeight: '1.4', fontWeight: 600 }}>
                         Personalized week-by-week learning roadmap designed by the AI career coach to close your skill gaps.
                       </p>
                     </div>
 
-                    <div className="flex-col" style={{ gap: '1.5rem', position: 'relative', paddingLeft: '1.5rem', borderLeft: '2px dashed var(--border-subtle)', marginLeft: '0.5rem', paddingBottom: '0.5rem' }}>
+                    <div className="flex-col" style={{ gap: '1.5rem', position: 'relative', paddingLeft: '1.5rem', borderLeft: '3px solid #000000', marginLeft: '0.5rem', paddingBottom: '0.5rem' }}>
                       {result.learningRoadmap.map((item, idx) => (
                         <div key={idx} style={{ position: 'relative' }}>
                           <span style={{
@@ -587,17 +595,17 @@ const ResumeUpload = () => {
                             top: '0.2rem',
                             width: '12px',
                             height: '12px',
-                            borderRadius: '50%',
+                            borderRadius: '0px',
                             background: 'var(--accent-primary)',
-                            border: '3px solid var(--bg-surface)'
+                            border: '2.5px solid #000000'
                           }} />
-                          <h5 style={{ fontSize: '0.9rem', color: 'var(--text-primary)', fontWeight: 700, margin: '0 0 0.25rem 0' }}>
+                          <h5 style={{ fontSize: '0.9rem', color: 'var(--text-primary)', fontWeight: 800, margin: '0 0 0.25rem 0' }}>
                             {item.week}
                           </h5>
-                          <h6 style={{ fontSize: '0.825rem', color: 'var(--accent-secondary)', fontWeight: 600, margin: '0 0 0.5rem 0' }}>
+                          <h6 style={{ fontSize: '0.825rem', color: 'var(--accent-secondary)', fontWeight: 700, margin: '0 0 0.5rem 0' }}>
                             {item.topic}
                           </h6>
-                          <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.5 }}>
+                          <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.5, fontWeight: 500 }}>
                             {item.description}
                           </p>
                         </div>
@@ -609,14 +617,14 @@ const ResumeUpload = () => {
                 {/* Tab Content 6: JD Match Analysis */}
                 {activeTab === 'jdmatch' && result.jdMatch && (
                   <div className="flex-col gap-6 animate-fade-in">
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255, 255, 255, 0.01)', border: '1px solid var(--border-subtle)', padding: '1.25rem', borderRadius: 'var(--radius-md)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#ffffff', border: '3px solid #000000', padding: '1.25rem', borderRadius: '0px', boxShadow: 'var(--shadow-sm)' }}>
                       <div>
-                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>JD Match Rate</span>
-                        <h4 style={{ fontSize: '2.25rem', fontWeight: 800, margin: '0.15rem 0 0 0', color: result.jdMatch.matchPercentage >= 70 ? 'var(--accent-tertiary)' : 'var(--accent-secondary)' }}>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase' }}>JD Match Rate</span>
+                        <h4 style={{ fontSize: '2.25rem', fontWeight: 800, margin: '0.15rem 0 0 0', color: 'var(--accent-primary)' }}>
                           {result.jdMatch.matchPercentage}%
                         </h4>
                       </div>
-                      <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', textAlign: 'right', maxWidth: '180px', lineHeight: 1.4 }}>
+                      <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', textAlign: 'right', maxWidth: '180px', lineHeight: 1.4, fontWeight: 600 }}>
                         {result.jdMatch.matchPercentage >= 70 
                           ? 'Strong profile alignment with this job description!' 
                           : 'Moderate alignment. Try targeting missing keywords below.'}
@@ -626,10 +634,10 @@ const ResumeUpload = () => {
                     {/* Missing Keywords */}
                     {result.jdMatch.missingKeywords?.length > 0 && (
                       <div className="flex-col gap-2">
-                        <h5 style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600, textTransform: 'uppercase', margin: 0 }}>Missing Keywords</h5>
+                        <h5 style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 700, textTransform: 'uppercase', margin: 0 }}>Missing Keywords</h5>
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                           {result.jdMatch.missingKeywords.map(kw => (
-                            <span key={kw} style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#f87171', border: '1px solid rgba(239, 68, 68, 0.15)', padding: '0.25rem 0.65rem', borderRadius: '0.5rem', fontSize: '0.775rem', fontWeight: 600 }}>
+                            <span key={kw} style={{ background: 'var(--accent-primary)', color: '#ffffff', border: '2px solid #000000', padding: '0.25rem 0.65rem', borderRadius: '0px', fontSize: '0.775rem', fontWeight: 800 }}>
                               {kw}
                             </span>
                           ))}
@@ -640,12 +648,12 @@ const ResumeUpload = () => {
                     {/* Recommended Improvements */}
                     {result.jdMatch.recommendedImprovements?.length > 0 && (
                       <div className="flex-col gap-2">
-                        <h5 style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600, textTransform: 'uppercase', margin: 0 }}>Target Recommendations</h5>
+                        <h5 style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 700, textTransform: 'uppercase', margin: 0 }}>Target Recommendations</h5>
                         <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                           {result.jdMatch.recommendedImprovements.map((imp, idx) => (
-                            <li key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', background: 'rgba(255, 255, 255, 0.01)', border: '1px solid var(--border-subtle)', padding: '0.75rem', borderRadius: 'var(--radius-md)' }}>
+                            <li key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', background: '#ffffff', border: '2px solid #000000', padding: '0.75rem', borderRadius: '0px' }}>
                               <ChevronRight size={14} color="var(--accent-secondary)" style={{ marginTop: '0.15rem', flexShrink: 0 }} />
-                              <span style={{ fontSize: '0.825rem', color: 'var(--text-secondary)', lineHeight: 1.4 }}>{imp}</span>
+                              <span style={{ fontSize: '0.825rem', color: 'var(--text-secondary)', lineHeight: 1.4, fontWeight: 500 }}>{imp}</span>
                             </li>
                           ))}
                         </ul>
@@ -658,17 +666,18 @@ const ResumeUpload = () => {
                 {activeTab === 'diagnostics' && selectedLine && (
                   <div className="flex-col gap-6 animate-fade-in">
                     <div className="flex-col gap-2">
-                      <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>AUDITED TEXT</span>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 700 }}>AUDITED TEXT</span>
                       <div style={{
-                        background: '#04040c',
+                        background: 'var(--bg-base)',
                         padding: '1rem',
-                        borderRadius: 'var(--radius-md)',
+                        borderRadius: '0px',
                         fontFamily: 'Consolas, Monaco, monospace',
                         fontSize: '0.775rem',
-                        border: '1px solid var(--border-subtle)',
-                        color: 'var(--text-secondary)',
+                        border: '2px solid #000000',
+                        color: '#000000',
                         wordBreak: 'break-word',
-                        lineHeight: 1.5
+                        lineHeight: 1.5,
+                        fontWeight: 600
                       }}>
                         "{selectedLine.text}"
                       </div>
@@ -680,26 +689,29 @@ const ResumeUpload = () => {
                           display: 'inline-block',
                           width: '8px',
                           height: '8px',
-                          borderRadius: '50%',
+                          borderRadius: '0px',
+                          border: '1.5px solid #000000',
                           background: selectedLine.status === 'strength' ? '#22c55e' : selectedLine.status === 'weakness' ? '#f59e0b' : '#ef4444'
                         }} />
                         <strong style={{
                           color: selectedLine.status === 'strength' ? '#22c55e' : selectedLine.status === 'weakness' ? '#f59e0b' : '#ef4444',
                           textTransform: 'uppercase',
                           fontSize: '0.8rem',
-                          letterSpacing: '0.05em'
+                          letterSpacing: '0.05em',
+                          fontWeight: 800
                         }}>
                           {selectedLine.status === 'strength' ? 'Positive Impact' : selectedLine.status === 'weakness' ? 'Grammar Choice Alert' : 'Critical Parser Flag'}
                         </strong>
                       </div>
                       
                       <div style={{
-                        background: 'rgba(255, 255, 255, 0.02)',
+                        background: '#ffffff',
                         padding: '1rem',
-                        borderRadius: 'var(--radius-md)',
-                        border: '1px solid var(--border-subtle)'
+                        borderRadius: '0px',
+                        border: '2px solid #000000',
+                        boxShadow: 'var(--shadow-sm)'
                       }}>
-                        <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', margin: 0, lineHeight: '1.6' }}>
+                        <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', margin: 0, lineHeight: '1.6', fontWeight: 500 }}>
                           {selectedLine.reason}
                         </p>
                       </div>
