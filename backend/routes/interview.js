@@ -148,6 +148,39 @@ const recruiterFollowUps = [
   'What was the most difficult technical decision you made and why?'
 ];
 
+// Helper to check if a single word is gibberish
+function isWordGibberish(w) {
+  // Strip punctuation and special characters, keep only letters
+  const cleanW = w.toLowerCase().replace(/[^a-z]/gi, '');
+  
+  // If the word had no letters (e.g. "3", "100", "+", etc.), it is not text gibberish
+  if (cleanW.length === 0) return false;
+  
+  const len = cleanW.length;
+  
+  const allowedShortWords = [
+    'a', 'an', 'the', 'is', 'am', 'are', 'in', 'on', 'at', 'to', 'for', 'by', 'of', 'and', 'but', 'or', 'so', 'if', 
+    'we', 'i', 'you', 'he', 'she', 'it', 'go', 'do', 'no', 'not', 'var', 'let', 'sql', 'git', 'api', 'id', 'db', 'ok', 
+    'yes', 'hi', 'hello', 'npm', 'dom', 'css', 'xml', 'csv', 'aws', 'jwt', 'url', 'uri', 'cli', 'ssh', 'ssl', 'tls', 'dns'
+  ];
+  if (allowedShortWords.includes(cleanW)) return false;
+
+  // 1-4 letters with no vowels (excluding 'y')
+  if (len <= 4 && !/[aeiouy]/i.test(cleanW)) return true;
+
+  // Longer than 4 letters with no vowels at all (e.g. "klhgvhb")
+  if (len > 4 && !/[aeiouy]/i.test(cleanW)) return true;
+
+  // High consonant repetition: 5 or more consonants in a row (e.g. "ghvbh", "jjklk")
+  if (/[bcdfghjklmnpqrstvwxz]{5,}/i.test(cleanW)) return true;
+
+  // Common keyboard sequences
+  const keyboardSequences = ['asdf', 'sdfg', 'dfgh', 'fghj', 'ghjk', 'hjkl', 'qwer', 'wert', 'erty', 'rtyu', 'tyui', 'yuio', 'uiop', 'zxcv', 'xcvb', 'cvbn', 'vbnm'];
+  if (keyboardSequences.some(seq => cleanW.includes(seq))) return true;
+
+  return false;
+}
+
 // Helper to detect if a message is uncooperative, spam, or gibberish
 function isUncooperative(messageText, isIntroduction = false) {
   if (!messageText) return true;
@@ -165,16 +198,12 @@ function isUncooperative(messageText, isIntroduction = false) {
   const hasUncooperativePhrase = uncooperativePhrases.some(phrase => textLower.includes(phrase));
   if (hasUncooperativePhrase) return true;
 
-  // 2. Gibberish patterns: repetitive single letters, long strings without spaces, etc.
+  // 2. Gibberish patterns: keyboard bashes, repetitive single letters
   const words = textLower.split(/\s+/).filter(Boolean);
   if (words.length === 0) return true;
 
-  // Check if all words are extremely short or repetitive keyboard bashes (e.g. "asdf", "hjkl", "qwerty")
-  const isKeyboardBash = words.every(w => 
-    /^[asdfghjklqwertyuiopzxcvbnm]{1,4}$/i.test(w) && 
-    !['a', 'an', 'the', 'is', 'am', 'are', 'in', 'on', 'at', 'to', 'for', 'by', 'of', 'and', 'but', 'or', 'so', 'if', 'we', 'i', 'you', 'he', 'she', 'it', 'go', 'do', 'no', 'not', 'var', 'let', 'sql', 'git', 'api', 'id', 'db', 'ok', 'yes', 'hi', 'hello'].includes(w)
-  );
-  if (isKeyboardBash) return true;
+  const hasGibberishWord = words.some(isWordGibberish);
+  if (hasGibberishWord) return true;
 
   // Repetitive words (e.g. "test test test test")
   const uniqueWords = new Set(words);
@@ -194,10 +223,10 @@ router.post('/chat', authMiddleware, async (req, res) => {
     const { role, history, newMessage, recruiterMode } = req.body;
     const messages = [...history];
 
-    // Check if session has already been terminated
+    // Check if session has already been terminated (case-insensitive check)
     if (history.length > 0) {
       const lastAssistantMsg = history[history.length - 1];
-      if (lastAssistantMsg && lastAssistantMsg.role === 'assistant' && lastAssistantMsg.content.includes("this interview session has been terminated")) {
+      if (lastAssistantMsg && lastAssistantMsg.role === 'assistant' && lastAssistantMsg.content.toLowerCase().includes("this interview session has been terminated")) {
         return res.json({ 
           messages: [
             ...history,
@@ -215,19 +244,98 @@ router.post('/chat', authMiddleware, async (req, res) => {
     const assistantMessages = messages.filter(m => m.role === 'assistant');
     const askedQuestionsText = assistantMessages.map(m => m.content);
 
+    const standardAskedCount = questions.filter(q => 
+      askedQuestionsText.some(asked => asked.includes(q.question))
+    ).length;
+
+    const isIntro = (standardAskedCount === 0);
+
     let aiResponse = null;
     let isFollowUpPrompt = false;
 
     // --- COOPERATION / UNCOOPERATIVE DETECTION FLOW ---
     if (newMessage && assistantMessages.length > 0) {
-      const isIntro = assistantMessages.length === 1;
-      if (isUncooperative(newMessage, isIntro)) {
+      let isSpam = isUncooperative(newMessage, isIntro);
+
+      if (!isSpam) {
+        try {
+          const lastQText = assistantMessages[assistantMessages.length - 1].content;
+          const coopResult = await ai.checkAnswerCooperation(role, lastQText, newMessage);
+          if (coopResult && coopResult.isUncooperative) {
+            isSpam = true;
+          }
+        } catch (err) {
+          console.error("AI cooperation check failed:", err);
+        }
+      }
+
+      // Check if it was an elaboration request, and they STILL failed keywords validation
+      const lastQText = assistantMessages[assistantMessages.length - 1].content;
+      const wasElaborationRequest = lastQText.includes("I notice you didn't quite cover") || lastQText.includes("Could you elaborate");
+
+      if (!isSpam && wasElaborationRequest) {
+        const matchedQuestionObj = questions.find(q => 
+          lastQText.includes(q.question) || 
+          (wasElaborationRequest && lastQText.includes(q.keywords[0]))
+        );
+        if (matchedQuestionObj) {
+          const textLower = newMessage.toLowerCase();
+          const matchedKeywords = matchedQuestionObj.keywords.filter(k => {
+            const escaped = k.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+            const regex = new RegExp(`(?<![a-zA-Z0-9])${escaped}(?![a-zA-Z0-9])`, 'i');
+            return regex.test(textLower);
+          });
+          if (matchedKeywords.length === 0) {
+            isSpam = true;
+          }
+        }
+      }
+
+      if (isSpam) {
         // Count consecutive uncooperative user messages in the history
         let consecutiveCount = 1;
         for (let i = history.length - 1; i >= 0; i--) {
           const msg = history[i];
           if (msg.role === 'user') {
-            if (isUncooperative(msg.content, i === 1)) {
+            const histIntro = (i <= 2);
+            let histSpam = isUncooperative(msg.content, histIntro);
+            
+            // Check if history message was elaboration response
+            const histLastAssistantMsg = history[i - 1];
+            if (!histSpam && histLastAssistantMsg && histLastAssistantMsg.role === 'assistant') {
+              const histLastQText = histLastAssistantMsg.content;
+              const histWasElaboration = histLastQText.includes("I notice you didn't quite cover") || histLastQText.includes("Could you elaborate");
+              if (histWasElaboration) {
+                const histMatchedQ = questions.find(q => 
+                  histLastQText.includes(q.question) || 
+                  (histWasElaboration && histLastQText.includes(q.keywords[0]))
+                );
+                if (histMatchedQ) {
+                  const histTextLower = msg.content.toLowerCase();
+                  const histMatchedKeywords = histMatchedQ.keywords.filter(k => {
+                    const escaped = k.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+                    const regex = new RegExp(`(?<![a-zA-Z0-9])${escaped}(?![a-zA-Z0-9])`, 'i');
+                    return regex.test(histTextLower);
+                  });
+                  if (histMatchedKeywords.length === 0) {
+                    histSpam = true;
+                  }
+                }
+              }
+            }
+
+            // Check if subsequent assistant response was a warning
+            const nextAssistantMsg = history[i + 1];
+            if (!histSpam && nextAssistantMsg && nextAssistantMsg.role === 'assistant') {
+              const wasWarning = nextAssistantMsg.content.includes("This is a professional interview assessment") ||
+                                 nextAssistantMsg.content.includes("I notice you are not engaging with the assessment questions") ||
+                                 nextAssistantMsg.content.includes("Due to continued lack of cooperation");
+              if (wasWarning) {
+                histSpam = true;
+              }
+            }
+
+            if (histSpam) {
               consecutiveCount++;
             } else {
               break;
@@ -248,32 +356,47 @@ router.post('/chat', authMiddleware, async (req, res) => {
     // --- ANSWER VALIDATION LOGIC ---
     if (!aiResponse && newMessage && assistantMessages.length > 0) {
       const lastQText = assistantMessages[assistantMessages.length - 1].content;
-      
-      // Determine if the last question was an elaboration prompt
       const wasElaborationRequest = lastQText.includes("I notice you didn't quite cover") || lastQText.includes("Could you elaborate");
 
-      // Find which standard question in the bank corresponds to this discussion
-      const matchedQuestionObj = questions.find(q => 
-        lastQText.includes(q.question) || 
-        (wasElaborationRequest && lastQText.includes(q.keywords[0]))
-      );
-
-      // If we found the question, and we haven't already asked them to elaborate on it
-      if (matchedQuestionObj && !wasElaborationRequest) {
+      if (isIntro && !wasElaborationRequest) {
+        // Validate introduction response
         const textLower = newMessage.toLowerCase();
         const words = textLower.split(/\s+/).filter(Boolean);
-
-        // Escape and match keywords safely
-        const matchedKeywords = matchedQuestionObj.keywords.filter(k => {
-          const escaped = k.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-          const regex = new RegExp(`(?<![a-zA-Z0-9])${escaped}(?![a-zA-Z0-9])`, 'i');
+        
+        const introKeywords = ['experience', 'project', 'skill', 'develop', 'career', 'stud', 'interest', 'work', 'background', 'engineer', 'learn', 'education', 'degree', 'university', 'tech', 'myself', 'resume'];
+        const matchedKeywords = introKeywords.filter(k => {
+          const regex = new RegExp(`(?<![a-zA-Z0-9])${k}(?![a-zA-Z0-9])`, 'i');
           return regex.test(textLower);
         });
-
-        // Trigger follow-up if answer is empty, too short, or lacks required keywords
-        if (matchedKeywords.length === 0 || words.length < 5) {
+        
+        if (matchedKeywords.length === 0 || words.length < 8) {
           isFollowUpPrompt = true;
-          aiResponse = `I notice you didn't quite cover key concepts (like ${matchedQuestionObj.hint}) in your response. Could you elaborate on this for the ${role} position?`;
+          aiResponse = `I notice you didn't quite cover your background and technical experience. Could you please introduce yourself and walk me through your experience for the ${role} position?`;
+        }
+      } else if (!wasElaborationRequest) {
+        // Find which standard question in the bank corresponds to this discussion
+        const matchedQuestionObj = questions.find(q => 
+          lastQText.includes(q.question) || 
+          (wasElaborationRequest && lastQText.includes(q.keywords[0]))
+        );
+
+        // If we found the question, and we haven't already asked them to elaborate on it
+        if (matchedQuestionObj) {
+          const textLower = newMessage.toLowerCase();
+          const words = textLower.split(/\s+/).filter(Boolean);
+
+          // Escape and match keywords safely
+          const matchedKeywords = matchedQuestionObj.keywords.filter(k => {
+            const escaped = k.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+            const regex = new RegExp(`(?<![a-zA-Z0-9])${escaped}(?![a-zA-Z0-9])`, 'i');
+            return regex.test(textLower);
+          });
+
+          // Trigger follow-up if answer is empty, too short, or lacks required keywords
+          if (matchedKeywords.length === 0 || words.length < 5) {
+            isFollowUpPrompt = true;
+            aiResponse = `I notice you didn't quite cover key concepts (like ${matchedQuestionObj.hint}) in your response. Could you elaborate on this for the ${role} position?`;
+          }
         }
       }
     }
@@ -291,10 +414,6 @@ router.post('/chat', authMiddleware, async (req, res) => {
           !askedQuestionsText.some(asked => asked.includes(q.question))
         );
 
-        const standardAskedCount = questions.filter(q => 
-          askedQuestionsText.some(asked => asked.includes(q.question))
-        ).length;
-
         if (standardAskedCount >= questions.length) {
           aiResponse = 'Great, that concludes our interview! Click "Disconnect Call" or "End & Score" to see your evaluation and score.';
         } else if (recruiterMode && assistantCount > 0 && assistantCount % 2 === 1) {
@@ -306,7 +425,7 @@ router.post('/chat', authMiddleware, async (req, res) => {
             const idx = Math.floor(Math.random() * remainingQuestions.length);
             const nextQuestion = remainingQuestions[idx].question;
             
-            if (assistantCount === 1) {
+            if (isIntro) {
               // Transition from introduction to technical question
               aiResponse = `Thank you for sharing that. Let's transition into the technical assessment. To begin, ${nextQuestion}`;
             } else {

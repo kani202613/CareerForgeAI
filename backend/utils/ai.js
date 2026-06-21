@@ -301,8 +301,39 @@ Return ONLY the raw JSON object. Do not include markdown block formatting.
   });
 }
 
+/**
+ * Checks if the candidate's answer is uncooperative, off-topic, gibberish, or a silly comedy action.
+ */
+async function checkAnswerCooperation(role, question, answer) {
+  const prompt = `
+You are an AI technical interviewer. Analyze the candidate's response to the interview question below for the "${role}" position.
+
+Interviewer's Question: "${question}"
+Candidate's Response: "${answer}"
+
+Determine if the candidate is:
+1. Being uncooperative or refusing to participate (e.g., saying "I don't care", "exit", "nonsense", "skip").
+2. Typing gibberish or keyboard mashing (e.g., "klhgvhb", "asdfghjk").
+3. Acting foolishly, making silly jokes, displaying "comedy actions", or being completely off-topic (e.g., responding to a technical programming question with a joke about potatoes, singing lyrics, or saying "I am not listening to you").
+
+Respond ONLY with a JSON object in this format:
+{
+  "isUncooperative": true or false,
+  "reason": "brief explanation"
+}
+
+If the answer is a valid attempt to answer the question (even if incorrect or very short), set "isUncooperative" to false.
+`;
+
+  return callAi(prompt, () => {
+    return { isUncooperative: false, reason: "Fallback default" };
+  });
+}
+
 module.exports = {
   analyzeResume,
   generateRoadmap,
-  evaluateInterview
+  evaluateInterview,
+  checkAnswerCooperation
 };
+
