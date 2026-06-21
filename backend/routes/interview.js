@@ -148,11 +148,64 @@ const recruiterFollowUps = [
   'What was the most difficult technical decision you made and why?'
 ];
 
+// Helper to detect if a message is uncooperative, spam, or gibberish
+function isUncooperative(messageText, isIntroduction = false) {
+  if (!messageText) return true;
+  const textLower = messageText.trim().toLowerCase();
+  
+  // 1. Explicit disinterest or refusal phrases
+  const uncooperativePhrases = [
+    'not interested', 'no interest', 'dont care', "don't care",
+    'blah blah', 'blahblah', 'blah', 'no idea', 'dont know', "don't know",
+    'i pass', 'skip', 'exit', 'stop', 'quit', 'nonsense', 'whatever',
+    'acting foolish', 'foolish', 'stupid', 'garbage', 'idiot', 'useless',
+    'i don\'t know', 'i dont know', 'no idea', 'dont care'
+  ];
+  
+  const hasUncooperativePhrase = uncooperativePhrases.some(phrase => textLower.includes(phrase));
+  if (hasUncooperativePhrase) return true;
+
+  // 2. Gibberish patterns: repetitive single letters, long strings without spaces, etc.
+  const words = textLower.split(/\s+/).filter(Boolean);
+  if (words.length === 0) return true;
+
+  // Check if all words are extremely short or repetitive keyboard bashes (e.g. "asdf", "hjkl", "qwerty")
+  const isKeyboardBash = words.every(w => 
+    /^[asdfghjklqwertyuiopzxcvbnm]{1,4}$/i.test(w) && 
+    !['a', 'an', 'the', 'is', 'am', 'are', 'in', 'on', 'at', 'to', 'for', 'by', 'of', 'and', 'but', 'or', 'so', 'if', 'we', 'i', 'you', 'he', 'she', 'it', 'go', 'do', 'no', 'not', 'var', 'let', 'sql', 'git', 'api', 'id', 'db', 'ok', 'yes', 'hi', 'hello'].includes(w)
+  );
+  if (isKeyboardBash) return true;
+
+  // Repetitive words (e.g. "test test test test")
+  const uniqueWords = new Set(words);
+  if (words.length >= 3 && uniqueWords.size === 1) return true;
+
+  // Very short response under 3 words - only check if it is NOT the welcome step
+  if (!isIntroduction && words.length < 3) {
+    return true;
+  }
+
+  return false;
+}
+
 // Start an interview session or get next question
 router.post('/chat', authMiddleware, async (req, res) => {
   try {
     const { role, history, newMessage, recruiterMode } = req.body;
     const messages = [...history];
+
+    // Check if session has already been terminated
+    if (history.length > 0) {
+      const lastAssistantMsg = history[history.length - 1];
+      if (lastAssistantMsg && lastAssistantMsg.role === 'assistant' && lastAssistantMsg.content.includes("this interview session has been terminated")) {
+        return res.json({ 
+          messages: [
+            ...history,
+            { role: 'assistant', content: "This interview session has been terminated. Please click 'End & Score' to see your evaluation." }
+          ] 
+        });
+      }
+    }
 
     if (newMessage) {
       messages.push({ role: 'user', content: newMessage });
@@ -165,8 +218,35 @@ router.post('/chat', authMiddleware, async (req, res) => {
     let aiResponse = null;
     let isFollowUpPrompt = false;
 
-    // --- ANSWER VALIDATION LOGIC ---
+    // --- COOPERATION / UNCOOPERATIVE DETECTION FLOW ---
     if (newMessage && assistantMessages.length > 0) {
+      const isIntro = assistantMessages.length === 1;
+      if (isUncooperative(newMessage, isIntro)) {
+        // Count consecutive uncooperative user messages in the history
+        let consecutiveCount = 1;
+        for (let i = history.length - 1; i >= 0; i--) {
+          const msg = history[i];
+          if (msg.role === 'user') {
+            if (isUncooperative(msg.content, i === 1)) {
+              consecutiveCount++;
+            } else {
+              break;
+            }
+          }
+        }
+
+        if (consecutiveCount === 1) {
+          aiResponse = `This is a professional interview assessment. Please provide a relevant technical response or description of your experience for the ${role} position.`;
+        } else if (consecutiveCount === 2) {
+          aiResponse = `I notice you are not engaging with the assessment questions. If you wish to continue the interview, please answer the questions professionally. Otherwise, we will have to terminate the session.`;
+        } else {
+          aiResponse = `Due to continued lack of cooperation, this interview session has been terminated. You can view your final evaluation score (which will reflect the incomplete answers) by clicking 'End & Score'.`;
+        }
+      }
+    }
+
+    // --- ANSWER VALIDATION LOGIC ---
+    if (!aiResponse && newMessage && assistantMessages.length > 0) {
       const lastQText = assistantMessages[assistantMessages.length - 1].content;
       
       // Determine if the last question was an elaboration prompt
@@ -174,7 +254,7 @@ router.post('/chat', authMiddleware, async (req, res) => {
 
       // Find which standard question in the bank corresponds to this discussion
       const matchedQuestionObj = questions.find(q => 
-        q.question === lastQText || 
+        lastQText.includes(q.question) || 
         (wasElaborationRequest && lastQText.includes(q.keywords[0]))
       );
 
