@@ -29,6 +29,33 @@ const resumeSchema = new mongoose.Schema({
     topic: { type: String },
     description: { type: String }
   }],
+  structureAnalysis: {
+    score: { type: Number, default: 0 },
+    sections: [{
+      name: { type: String },
+      found: { type: Boolean },
+      score: { type: Number },
+      feedback: { type: String }
+    }],
+    chronologicalAudit: {
+      isDescending: { type: Boolean },
+      feedback: { type: String }
+    },
+    contactInfoAudit: {
+      hasEmail: { type: Boolean },
+      hasPhone: { type: Boolean },
+      hasLinkedIn: { type: Boolean },
+      hasGitHub: { type: Boolean },
+      isAtTop: { type: Boolean },
+      feedback: { type: String }
+    },
+    formattingAudit: {
+      hasBulletPoints: { type: Boolean },
+      hasTablesColumns: { type: Boolean },
+      hasVisualRatings: { type: Boolean },
+      feedback: { type: String }
+    }
+  },
   jdMatch: {
     matchPercentage: { type: Number },
     missingKeywords: [{ type: String }],

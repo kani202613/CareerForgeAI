@@ -47,7 +47,9 @@ const ResumeUpload = () => {
       
       // Auto-set the active tab based on results
       const data = response.data.result;
-      if (data.warnings && data.warnings.length > 0) {
+      if (data.structureAnalysis) {
+        setActiveTab('structure');
+      } else if (data.warnings && data.warnings.length > 0) {
         setActiveTab('critical');
       } else if (data.strengths && data.strengths.length > 0) {
         setActiveTab('strengths');
@@ -394,6 +396,12 @@ const ResumeUpload = () => {
                   >
                     Rewrite Checklist
                   </button>
+                  <button 
+                    onClick={() => setActiveTab('structure')}
+                    className={`tab-btn ${activeTab === 'structure' ? 'active' : ''}`}
+                  >
+                    ATS Structure
+                  </button>
                   {result.learningRoadmap?.length > 0 && (
                     <button 
                       onClick={() => setActiveTab('roadmap')}
@@ -459,6 +467,174 @@ const ResumeUpload = () => {
                         </li>
                       ))}
                     </ul>
+                  </div>
+                )}
+
+                {/* Tab Content: ATS Structure Analysis */}
+                {activeTab === 'structure' && result.structureAnalysis && (
+                  <div className="flex-col gap-6 animate-fade-in">
+                    {/* 1. Structure Score Banner */}
+                    <div style={{
+                      background: 'var(--accent-tertiary)',
+                      border: '3px solid #000000',
+                      padding: '1.5rem',
+                      boxShadow: 'var(--shadow-sm)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: '1rem',
+                      borderRadius: '0px'
+                    }}>
+                      <div>
+                        <span style={{ fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', color: '#000000', letterSpacing: '0.05em' }}>ATS Layout Compliance</span>
+                        <h3 style={{ fontSize: '2rem', fontWeight: 900, margin: '0.2rem 0', fontFamily: 'var(--font-display)', color: '#000000' }}>
+                          Structure Score: <span style={{ color: 'var(--accent-primary)', textDecoration: 'underline' }}>{result.structureAnalysis.score}</span>/100
+                        </h3>
+                        <p style={{ margin: 0, fontSize: '0.8rem', color: '#000000', fontWeight: 600 }}>
+                          {result.structureAnalysis.score >= 80 
+                            ? 'Excellent structural compliance! Your sections are well-formatted for parsing engines.' 
+                            : 'Improve structure score to prevent automated parsing systems from jumbling your details.'}
+                        </p>
+                      </div>
+                      <div style={{
+                        background: '#ffffff',
+                        border: '3px solid #000000',
+                        padding: '0.75rem 1rem',
+                        fontSize: '1.5rem',
+                        fontWeight: 900,
+                        boxShadow: '2px 2px 0px 0px #000000',
+                        color: '#000000',
+                        fontFamily: 'var(--font-display)',
+                        textTransform: 'uppercase'
+                      }}>
+                        {result.structureAnalysis.score >= 80 ? 'PASS' : 'WARN'}
+                      </div>
+                    </div>
+
+                    {/* 2. Contact details checklist */}
+                    <div className="glass-panel" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', borderRadius: '0px' }}>
+                      <h4 style={{ fontSize: '0.8rem', fontWeight: 800, textTransform: 'uppercase', margin: 0, letterSpacing: '0.05em', color: 'var(--accent-primary)' }}>
+                        Contact Information Position & Presence
+                      </h4>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.5rem' }}>
+                        {[
+                          { label: 'Email Address', status: result.structureAnalysis.contactInfoAudit.hasEmail },
+                          { label: 'Phone Number', status: result.structureAnalysis.contactInfoAudit.hasPhone },
+                          { label: 'LinkedIn Profile', status: result.structureAnalysis.contactInfoAudit.hasLinkedIn },
+                          { label: 'GitHub Repository', status: result.structureAnalysis.contactInfoAudit.hasGitHub },
+                          { label: 'Placed at Header (Top)', status: result.structureAnalysis.contactInfoAudit.isAtTop }
+                        ].map((item, idx) => (
+                          <div key={idx} style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem',
+                            background: item.status ? '#ffffff' : '#f0f0ed',
+                            border: '2px solid #000000',
+                            padding: '0.5rem 0.75rem',
+                            boxShadow: 'var(--shadow-sm)',
+                            borderRadius: '0px'
+                          }}>
+                            <span style={{ fontSize: '1rem' }}>{item.status ? '✅' : '❌'}</span>
+                            <span style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', color: '#000000' }}>
+                              {item.label}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                      <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 500, lineHeight: 1.4 }}>
+                        <strong>Audit Summary:</strong> {result.structureAnalysis.contactInfoAudit.feedback}
+                      </p>
+                    </div>
+
+                    {/* 3. Section completeness checklist */}
+                    <div className="glass-panel" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', borderRadius: '0px' }}>
+                      <h4 style={{ fontSize: '0.8rem', fontWeight: 800, textTransform: 'uppercase', margin: 0, letterSpacing: '0.05em', color: 'var(--accent-secondary)' }}>
+                        Section Completeness & Header Standard
+                      </h4>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.5rem' }}>
+                        {result.structureAnalysis.sections.map((sec, idx) => (
+                          <div key={idx} style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem',
+                            background: sec.found ? '#ffffff' : '#f0f0ed',
+                            border: '2px solid #000000',
+                            padding: '0.5rem 0.75rem',
+                            boxShadow: 'var(--shadow-sm)',
+                            borderRadius: '0px'
+                          }}>
+                            <span style={{ fontSize: '1rem' }}>{sec.found ? '✅' : '❌'}</span>
+                            <span style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', color: '#000000' }}>
+                              {sec.name}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                      <ul style={{ margin: '0.25rem 0 0 0', paddingLeft: '1.25rem', fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                        {result.structureAnalysis.sections.map((sec, idx) => (
+                          <li key={idx} style={{ fontWeight: 500 }}>
+                            <strong>{sec.name}:</strong> {sec.feedback}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    {/* 4. Chronological & Formatting Audit */}
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem' }}>
+                      
+                      {/* Chronological order */}
+                      <div className="glass-panel" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', borderRadius: '0px' }}>
+                        <h4 style={{ fontSize: '0.8rem', fontWeight: 800, textTransform: 'uppercase', margin: 0, letterSpacing: '0.05em', color: '#000000' }}>
+                          Chronological Audit
+                        </h4>
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.5rem',
+                          background: '#ffffff',
+                          border: '2px solid #000000',
+                          padding: '0.5rem 0.75rem',
+                          boxShadow: 'var(--shadow-sm)',
+                          borderRadius: '0px'
+                        }}>
+                          <span style={{ fontSize: '1rem' }}>{result.structureAnalysis.chronologicalAudit.isDescending ? '✅' : '⚠️'}</span>
+                          <span style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase' }}>
+                            {result.structureAnalysis.chronologicalAudit.isDescending ? 'Reverse Chronological Order' : 'Out of Chronological Order'}
+                          </span>
+                        </div>
+                        <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 500, lineHeight: 1.4 }}>
+                          {result.structureAnalysis.chronologicalAudit.feedback}
+                        </p>
+                      </div>
+
+                      {/* Formatting & layout */}
+                      <div className="glass-panel" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', borderRadius: '0px' }}>
+                        <h4 style={{ fontSize: '0.8rem', fontWeight: 800, textTransform: 'uppercase', margin: 0, letterSpacing: '0.05em', color: '#000000' }}>
+                          ATS Formatting Audit
+                        </h4>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                          {[
+                            { label: 'Uses Bullet Points', status: result.structureAnalysis.formattingAudit.hasBulletPoints, reverse: false },
+                            { label: 'Complex Tables/Columns', status: result.structureAnalysis.formattingAudit.hasTablesColumns, reverse: true },
+                            { label: 'Visual Progress Ratings', status: result.structureAnalysis.formattingAudit.hasVisualRatings, reverse: true }
+                          ].map((item, idx) => {
+                            const isPassing = item.reverse ? !item.status : item.status;
+                            return (
+                              <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                <span style={{ fontSize: '0.85rem' }}>{isPassing ? '✅' : '❌'}</span>
+                                <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
+                                  {item.label}
+                                </span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                        <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 500, lineHeight: 1.4 }}>
+                          {result.structureAnalysis.formattingAudit.feedback}
+                        </p>
+                      </div>
+
+                    </div>
                   </div>
                 )}
 

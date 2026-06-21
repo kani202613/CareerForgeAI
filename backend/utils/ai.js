@@ -87,6 +87,28 @@ Analyze and return a JSON object containing:
 - suggestions: Array of 3-5 strings detailing actionable ATS format rewrite suggestions.
 - missingSkills: Array of strings detailing technical or soft skills missing from the resume.
 - improvementPlan: Array of strings detailing a plan to address weaknesses and missing skills.
+- structureAnalysis: A JSON object detailing structural layout audits:
+  - score: Number (0-100) representing structural layouts compatibility.
+  - sections: Array of objects for standard sections (Summary, Skills, Work Experience, Education, Projects). Each object has:
+    - name: String
+    - found: Boolean
+    - score: Number (8 for found, 0 for missing)
+    - feedback: String
+  - chronologicalAudit: Object containing:
+    - isDescending: Boolean (true if dates are descending, false otherwise)
+    - feedback: String
+  - contactInfoAudit: Object containing:
+    - hasEmail: Boolean
+    - hasPhone: Boolean
+    - hasLinkedIn: Boolean
+    - hasGitHub: Boolean
+    - isAtTop: Boolean (true if email/phone appear before main section headers, false otherwise)
+    - feedback: String
+  - formattingAudit: Object containing:
+    - hasBulletPoints: Boolean
+    - hasTablesColumns: Boolean (true if pipes '|' or tabular layouts are detected)
+    - hasVisualRatings: Boolean (true if stars or progress bars are detected)
+    - feedback: String
 ${jdText ? `
 - matchPercentage: Number (0-100) indicating how well the resume matches the JD.
 - missingKeywords: Array of strings detailing keywords present in the JD but missing in the resume.
@@ -118,6 +140,48 @@ Return ONLY the raw JSON object. Do not include markdown block formatting (e.g.,
       suggestions.push('Replace Objective with a Professional Summary.');
     }
 
+    // Default mock structure analysis
+    const hasEmail = /@/.test(lower);
+    const hasPhone = /\+?\b\d{10,12}\b|\b\d{3}[-.]?\d{3}[-.]?\d{4}\b/.test(lower);
+    const hasLinkedIn = lower.includes('linkedin.com');
+    const hasGitHub = lower.includes('github.com');
+    const hasEducation = lower.includes('education');
+    const hasExperience = lower.includes('experience') || lower.includes('work history');
+    const hasSkills = lower.includes('skills');
+    const hasProjects = lower.includes('projects');
+    const hasSummary = lower.includes('summary') || lower.includes('profile');
+
+    const sections = [
+      { name: 'Summary', found: hasSummary, score: hasSummary ? 8 : 0, feedback: hasSummary ? 'Summary section verified.' : 'Missing Professional Summary.' },
+      { name: 'Skills', found: hasSkills, score: hasSkills ? 8 : 0, feedback: hasSkills ? 'Skills section verified.' : 'Missing Skills section.' },
+      { name: 'Work Experience', found: hasExperience, score: hasExperience ? 8 : 0, feedback: hasExperience ? 'Experience section verified.' : 'Missing Experience section.' },
+      { name: 'Education', found: hasEducation, score: hasEducation ? 8 : 0, feedback: hasEducation ? 'Education section verified.' : 'Missing Education section.' },
+      { name: 'Projects', found: hasProjects, score: hasProjects ? 8 : 0, feedback: hasProjects ? 'Projects section verified.' : 'Missing Projects section.' }
+    ];
+
+    const structureAnalysis = {
+      score: 80,
+      sections,
+      chronologicalAudit: {
+        isDescending: true,
+        feedback: 'Work history is in reverse-chronological order.'
+      },
+      contactInfoAudit: {
+        hasEmail,
+        hasPhone,
+        hasLinkedIn,
+        hasGitHub,
+        isAtTop: true,
+        feedback: 'Contact information parsed correctly at the header.'
+      },
+      formattingAudit: {
+        hasBulletPoints: true,
+        hasTablesColumns: false,
+        hasVisualRatings: false,
+        feedback: 'Standard layout formatting rules observed.'
+      }
+    };
+
     return {
       strengths,
       weaknesses: weaknesses.length > 0 ? weaknesses : ['None detected'],
@@ -126,7 +190,8 @@ Return ONLY the raw JSON object. Do not include markdown block formatting (e.g.,
       improvementPlan: ['Review section titles', 'Upload project repository links'],
       matchPercentage: jdText ? 65 : null,
       missingKeywords: jdText ? ['TypeScript', 'Jest'] : [],
-      recommendedImprovements: jdText ? ['Integrate TypeScript keywords in projects'] : []
+      recommendedImprovements: jdText ? ['Integrate TypeScript keywords in projects'] : [],
+      structureAnalysis
     };
   });
 }
