@@ -366,10 +366,51 @@ If the answer is a valid attempt to answer the question (even if incorrect or ve
   });
 }
 
+/**
+ * Transcribes text from a resume image using multimodal vision APIs.
+ */
+async function extractTextFromImage(buffer, mimetype) {
+  if (aiClientType === 'gemini' && geminiModel) {
+    try {
+      const imagePart = {
+        inlineData: {
+          data: buffer.toString('base64'),
+          mimeType: mimetype
+        }
+      };
+      const prompt = "This is an image of a resume. Extract and transcribe all readable text from this image exactly as formatted. Return ONLY the transcribed text. Do not add any introductory or concluding comments.";
+      const result = await geminiModel.generateContent([prompt, imagePart]);
+      return result.response.text();
+    } catch (err) {
+      console.error('[AI OCR Error] Gemini OCR failed:', err);
+    }
+  } else if (aiClientType === 'openai' && openaiClient) {
+    try {
+      const response = await openaiClient.chat.completions.create({
+        model: 'gpt-4o-mini',
+        messages: [
+          {
+            role: 'user',
+            content: [
+              { type: 'text', text: 'This is an image of a resume. Extract and transcribe all readable text from this image exactly as formatted. Return ONLY the transcribed text. Do not add any introductory or concluding comments.' },
+              { type: 'image_url', image_url: { url: `data:${mimetype};base64,${buffer.toString('base64')}` } }
+            ]
+          }
+        ]
+      });
+      return response.choices[0].message.content;
+    } catch (err) {
+      console.error('[AI OCR Error] OpenAI OCR failed:', err);
+    }
+  }
+  throw new Error('AI OCR is only supported when Gemini or OpenAI API keys are active.');
+}
+
 module.exports = {
   analyzeResume,
   generateRoadmap,
   evaluateInterview,
-  checkAnswerCooperation
+  checkAnswerCooperation,
+  extractTextFromImage
 };
 

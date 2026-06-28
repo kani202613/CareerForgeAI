@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const pdfParse = require('pdf-parse');
+const mammoth = require('mammoth');
 const Resume = require('../models/Resume');
 const { authMiddleware } = require('./user');
 const ai = require('../utils/ai');
@@ -501,15 +502,52 @@ router.post('/upload', authMiddleware, upload.single('resume'), async (req, res)
     }
 
     const jobDescription = req.body.jobDescription || null;
+    const mimeType = req.file.mimetype;
+    const filename = req.file.originalname.toLowerCase();
 
-    let text;
-    try {
-      const data = await pdfParse(req.file.buffer);
-      text = data.text;
-    } catch (parseError) {
-      console.error('PDF parsing error:', parseError);
-      return res.status(400).json({ 
-        message: 'Could not read text from your PDF file. Please ensure the file is not password-protected, encrypted, or corrupted, and try saving it as a standard PDF again.' 
+    let text = '';
+
+    if (mimeType === 'application/pdf' || filename.endsWith('.pdf')) {
+      try {
+        const data = await pdfParse(req.file.buffer);
+        text = data.text;
+      } catch (parseError) {
+        console.error('PDF parsing error:', parseError);
+        return res.status(400).json({ 
+          message: 'Could not read text from your PDF file. Please ensure the file is not password-protected, encrypted, or corrupted, and try saving it as a standard PDF again.' 
+        });
+      }
+    } else if (mimeType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || filename.endsWith('.docx')) {
+      try {
+        const docResult = await mammoth.extractRawText({ buffer: req.file.buffer });
+        text = docResult.value;
+      } catch (docError) {
+        console.error('Word parsing error:', docError);
+        return res.status(400).json({ 
+          message: 'Could not read text from your Word (.docx) document. Please verify the document is valid and try again.' 
+        });
+      }
+    } else if (mimeType === 'text/plain' || filename.endsWith('.txt')) {
+      try {
+        text = req.file.buffer.toString('utf8');
+      } catch (txtError) {
+        console.error('Text parsing error:', txtError);
+        return res.status(400).json({ 
+          message: 'Could not parse your plain text (.txt) file. Make sure it uses UTF-8 encoding.' 
+        });
+      }
+    } else if (mimeType.startsWith('image/') || filename.endsWith('.png') || filename.endsWith('.jpg') || filename.endsWith('.jpeg')) {
+      try {
+        text = await ai.extractTextFromImage(req.file.buffer, req.file.mimetype);
+      } catch (ocrError) {
+        console.error('Image OCR parsing error:', ocrError);
+        return res.status(400).json({ 
+          message: 'Failed to transcribe your resume image. Please make sure the image is clear and you have active AI keys configured.' 
+        });
+      }
+    } else {
+      return res.status(400).json({
+        message: 'Unsupported file type. Please upload a standard PDF, Microsoft Word (.docx), Plain Text (.txt), or clear image (PNG, JPG, JPEG) of your resume.'
       });
     }
 

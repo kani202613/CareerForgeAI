@@ -94,7 +94,7 @@ const ResumeUpload = () => {
           <input 
             type="file" 
             ref={fileInputRef}
-            accept="application/pdf"
+            accept="application/pdf, application/vnd.openxmlformats-officedocument.wordprocessingml.document, text/plain, image/png, image/jpeg, image/jpg"
             onChange={e => setFile(e.target.files[0])}
             style={{ display: 'none' }}
           />
@@ -134,10 +134,10 @@ const ResumeUpload = () => {
             </div>
             <div>
               <div style={{ fontWeight: '800', fontSize: '1rem', color: 'var(--text-primary)', marginBottom: '0.25rem', textTransform: 'uppercase' }}>
-                {file ? file.name : 'Choose Resume PDF'}
+                {file ? file.name : 'Choose Resume / Document'}
               </div>
               <div style={{ fontSize: '0.825rem', color: 'var(--text-muted)' }}>
-                {file ? `${(file.size / 1024).toFixed(1)} KB` : 'Supports standard PDF files (limit 5MB)'}
+                {file ? `${(file.size / 1024).toFixed(1)} KB` : 'Supports PDF, Word (.docx), TXT, or Image files (limit 5MB)'}
               </div>
             </div>
           </div>
