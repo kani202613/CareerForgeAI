@@ -296,9 +296,9 @@ router.post('/chat', authMiddleware, async (req, res) => {
       }
 
       if (isSpam) {
-        // Count consecutive uncooperative user messages in the history
-        let consecutiveCount = 1;
-        for (let i = history.length - 1; i >= 0; i--) {
+        // Count total uncooperative user messages in the entire history
+        let totalUncooperativeCount = 1;
+        for (let i = 0; i < history.length; i++) {
           const msg = history[i];
           if (msg.role === 'user') {
             const histIntro = (i <= 2);
@@ -333,32 +333,33 @@ router.post('/chat', authMiddleware, async (req, res) => {
             if (!histSpam && nextAssistantMsg && nextAssistantMsg.role === 'assistant') {
               const wasWarning = nextAssistantMsg.content.includes("This is a professional interview assessment") ||
                                  nextAssistantMsg.content.includes("I notice you are not engaging with the assessment questions") ||
-                                 nextAssistantMsg.content.includes("Due to continued lack of cooperation");
+                                 nextAssistantMsg.content.includes("Due to continued lack of cooperation") ||
+                                 nextAssistantMsg.content.includes("Excuse me, I notice you are making") ||
+                                 nextAssistantMsg.content.includes("This is your final warning") ||
+                                 nextAssistantMsg.content.includes("Making funny gestures");
               if (wasWarning) {
                 histSpam = true;
               }
             }
 
             if (histSpam) {
-              consecutiveCount++;
-            } else {
-              break;
+              totalUncooperativeCount++;
             }
           }
         }
 
         if (newMessage.startsWith('[SYSTEM:')) {
-          if (consecutiveCount === 1) {
-            aiResponse = `Please focus on the interview. Making funny gestures or unprofessional faces (like sticking your tongue out) is inappropriate during an interview. Let's maintain a professional posture.`;
-          } else if (consecutiveCount === 2) {
-            aiResponse = `I must request that you refrain from making unprofessional gestures. If you continue to behave unprofessionally, I will have to terminate this session immediately.`;
+          if (totalUncooperativeCount === 1) {
+            aiResponse = `Excuse me, I notice you are making unprofessional gestures/faces in front of the camera. Please stop immediately and maintain a professional posture. This behavior is unacceptable for an interview.`;
+          } else if (totalUncooperativeCount === 2) {
+            aiResponse = `This is your final warning. Your visual behavior is highly unprofessional. If you make any further inappropriate gestures or fail to take this seriously, I will terminate this session immediately.`;
           } else {
-            aiResponse = `Due to continued lack of cooperation and unprofessional gestures, this interview session has been terminated. Generating your final report now...`;
+            aiResponse = `Due to continued lack of cooperation and unprofessional visual gestures, this interview session has been terminated. Generating your final report now...`;
           }
         } else {
-          if (consecutiveCount === 1) {
+          if (totalUncooperativeCount === 1) {
             aiResponse = `This is a professional interview assessment. Please provide a relevant technical response or description of your experience for the ${role} position.`;
-          } else if (consecutiveCount === 2) {
+          } else if (totalUncooperativeCount === 2) {
             aiResponse = `I notice you are not engaging with the assessment questions. If you wish to continue the interview, please answer the questions professionally. Otherwise, we will have to terminate the session.`;
           } else {
             aiResponse = `Due to continued lack of cooperation, this interview session has been terminated. Generating your final report now...`;
@@ -527,12 +528,25 @@ router.post('/end', authMiddleware, async (req, res) => {
       console.error('AI transcript evaluation failed, using fallback:', aiErr);
     }
 
-    const finalScore = aiEvaluation ? aiEvaluation.overall : ruleScore;
-    const confidence = aiEvaluation ? aiEvaluation.confidence : Math.round(finalScore * 0.9);
-    const technicalAccuracy = aiEvaluation ? aiEvaluation.technicalAccuracy : Math.round(finalScore * 0.85);
-    const communication = aiEvaluation ? aiEvaluation.communication : Math.round(finalScore * 0.95);
-    const feedback = aiEvaluation ? aiEvaluation.feedback : 'Good performance overall. Consider detailing your tech terms with active verbs.';
+    let finalScore = aiEvaluation ? aiEvaluation.overall : ruleScore;
+    let confidence = aiEvaluation ? aiEvaluation.confidence : Math.round(finalScore * 0.9);
+    let technicalAccuracy = aiEvaluation ? aiEvaluation.technicalAccuracy : Math.round(finalScore * 0.85);
+    let communication = aiEvaluation ? aiEvaluation.communication : Math.round(finalScore * 0.95);
+    let feedback = aiEvaluation ? aiEvaluation.feedback : 'Good performance overall. Consider detailing your tech terms with active verbs.';
     const detailedEvaluations = aiEvaluation ? aiEvaluation.detailedEvaluations : [];
+
+    const hasTerminationMsg = history.some(m => 
+      m.role === 'assistant' && 
+      m.content.toLowerCase().includes('terminated')
+    );
+
+    if (hasTerminationMsg) {
+      finalScore = 0;
+      confidence = 0;
+      technicalAccuracy = 0;
+      communication = 0;
+      feedback = "This mock interview was terminated early due to continued lack of cooperation, keyboard spam, or unprofessional visual gestures (such as sticking tongue out or making funny faces). The candidate receives a zero readiness score for failing to meet professional and communication guidelines.";
+    }
 
     const newInterview = new InterviewResult({
       userId: req.user.userId,

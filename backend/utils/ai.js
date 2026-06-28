@@ -313,6 +313,19 @@ Return ONLY the raw JSON object. Do not include markdown block formatting.
       feedbackText = `Unprofessional visual gestures (such as sticking tongue out, waving hands distractedly, or making funny faces) were detected ${gestureWarningsCount} time(s) during the session. While base technical concepts were outlined, the candidate must improve professional demeanor, looking directly at the camera without visual distractions to pass HR guidelines.`;
     }
 
+    const hasTermination = transcript.some(m => 
+      m.role === 'assistant' && 
+      m.content.toLowerCase().includes('terminated')
+    );
+
+    if (hasTermination) {
+      confidenceScore = 0;
+      technicalAccuracyScore = 0;
+      communicationScore = 0;
+      overallScore = 0;
+      feedbackText = `This mock interview was terminated early due to continued lack of cooperation, keyboard spam, or unprofessional visual gestures (such as sticking tongue out or making funny faces). The candidate receives a zero readiness score for failing to comply with professional communication standards.`;
+    }
+
     return {
       confidence: confidenceScore,
       technicalAccuracy: technicalAccuracyScore,
