@@ -265,20 +265,30 @@ const Interview = () => {
     }
   }, [history]);
 
-  const handleSend = async (isFirst = false) => {
-    if (!isFirst && !input.trim()) return;
+  const handleSend = async (isFirst = false, customMessage = null) => {
+    const messageToSend = customMessage !== null ? customMessage : (isFirst ? null : input);
+    if (!isFirst && (!messageToSend || !messageToSend.trim())) return;
     setLoading(true);
     
-    const newMessage = isFirst ? null : input;
-    if (!isFirst) setInput('');
+    if (!customMessage && !isFirst) setInput('');
     
     try {
       const response = await axios.post(
         '/api/interview/chat',
-        { role, history, newMessage, recruiterMode },
+        { role, history, newMessage: messageToSend, recruiterMode },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setHistory(response.data.messages);
+      
+      const newHistory = response.data.messages;
+      setHistory(newHistory);
+
+      // Check if session has been terminated
+      if (response.data.terminated) {
+        // Automatically end interview to show the review
+        setTimeout(() => {
+          endInterviewWithHistory(newHistory);
+        }, 2000);
+      }
     } catch (error) {
       console.error(error);
     } finally {
@@ -291,13 +301,13 @@ const Interview = () => {
     handleSend(true);
   };
 
-  const endInterview = async () => {
+  const endInterviewWithHistory = async (updatedHistory) => {
     stopAllTracks();
     setLoading(true);
     try {
       const response = await axios.post(
         '/api/interview/end',
-        { role, history },
+        { role, history: updatedHistory },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       navigate('/interview/feedback', {
@@ -305,7 +315,7 @@ const Interview = () => {
           score: response.data.result.score,
           feedback: response.data.result.feedback,
           role,
-          transcript: history,
+          transcript: updatedHistory,
           fillerWordsCount: response.data.result.fillerWordsCount,
           averageWordCount: response.data.result.averageWordCount,
           clarityGrade: response.data.result.clarityGrade,
@@ -320,6 +330,20 @@ const Interview = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const endInterview = async () => {
+    await endInterviewWithHistory(history);
+  };
+
+  const triggerFunnyGesture = (type) => {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
+    const gestureDesc = type === 'sticking tongue out' 
+      ? 'sticking tongue out and making funny faces' 
+      : 'waving hands distractedly';
+    handleSend(false, `[SYSTEM: User performed unprofessional gesture: ${gestureDesc}]`);
   };
 
   return (
@@ -482,6 +506,59 @@ const Interview = () => {
                   <p style={{ fontSize: '0.85rem', margin: 0 }}>Webcam feed is inactive</p>
                 </div>
               )}
+
+              {/* Simulation triggers for unprofessional gestures */}
+              {(cameraOn || screenShare) && (
+                <div style={{
+                  position: 'absolute',
+                  top: '10px',
+                  right: '10px',
+                  display: 'flex',
+                  gap: '0.5rem',
+                  zIndex: 10
+                }}>
+                  <button
+                    onClick={() => triggerFunnyGesture('sticking tongue out')}
+                    className="btn btn-secondary"
+                    style={{
+                      background: 'rgba(15, 23, 42, 0.75)',
+                      border: 'none',
+                      color: '#ffffff',
+                      fontSize: '0.7rem',
+                      padding: '0.25rem 0.6rem',
+                      borderRadius: 'var(--radius-sm)',
+                      fontWeight: 700,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.25rem',
+                      cursor: 'pointer'
+                    }}
+                    title="Simulate sticking tongue out / making funny faces"
+                  >
+                    <span>😜 Funny Face</span>
+                  </button>
+                  <button
+                    onClick={() => triggerFunnyGesture('waving hands')}
+                    className="btn btn-secondary"
+                    style={{
+                      background: 'rgba(15, 23, 42, 0.75)',
+                      border: 'none',
+                      color: '#ffffff',
+                      fontSize: '0.7rem',
+                      padding: '0.25rem 0.6rem',
+                      borderRadius: 'var(--radius-sm)',
+                      fontWeight: 700,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.25rem',
+                      cursor: 'pointer'
+                    }}
+                    title="Simulate waving hands distractedly"
+                  >
+                    <span>👋 Wave Hand</span>
+                  </button>
+                </div>
+              )}
               
               <div style={{
                 position: 'absolute',
@@ -635,6 +712,32 @@ const Interview = () => {
               {history.map((msg, idx) => {
                 if (msg.role === 'system') return null;
                 const isAssistant = msg.role === 'assistant';
+                
+                if (msg.role === 'user' && msg.content.startsWith('[SYSTEM:')) {
+                  const isTongue = msg.content.includes('sticking tongue out');
+                  const gestureName = isTongue ? 'Sticking Tongue Out / Funny Face' : 'Waving Hands Distractedly';
+                  return (
+                    <div 
+                      key={idx}
+                      style={{
+                        alignSelf: 'center',
+                        background: 'rgba(239, 68, 68, 0.08)',
+                        border: '1px dashed rgba(239, 68, 68, 0.4)',
+                        borderRadius: 'var(--radius-md)',
+                        padding: '0.6rem 1rem',
+                        fontSize: '0.8rem',
+                        color: '#ef4444',
+                        fontWeight: 600,
+                        textAlign: 'center',
+                        width: '90%',
+                        margin: '0.25rem 0'
+                      }}
+                    >
+                      ⚠️ Gesture Flagged: {gestureName}
+                    </div>
+                  );
+                }
+
                 return (
                   <div 
                     key={idx} 

@@ -253,12 +253,14 @@ Evaluate the candidate's responses in this mock interview for the role of "${rol
 Question/Answer Transcript:
 ${transcriptText}
 
+Note: If the transcript contains entries indicating unprofessional gestures or funny actions (like "[SYSTEM: User performed unprofessional gesture..."), make sure to heavily penalize the confidence and communication scores, and mention these unprofessional gestures explicitly in the overall feedback under a "unprofessional gesture habits to fix" warning.
+
 Analyze the candidate's answers and return a JSON object containing:
-- confidence: Number (0-100) indicating communication confidence, pacing, and absence of excessive filler words.
+- confidence: Number (0-100) indicating communication confidence, pacing, and absence of excessive filler words or unprofessional gestures.
 - technicalAccuracy: Number (0-100) indicating technical correctness and depth.
-- communication: Number (0-100) indicating structural clarity and explanation skills.
+- communication: Number (0-100) indicating structural clarity, posture, and explanation skills.
 - overall: Number (0-100) indicating the overall performance score.
-- feedback: String summarizing strengths and improvement points.
+- feedback: String summarizing strengths, communication gaps, and specific posture/gesture corrections (if any unprofessional actions occurred).
 - detailedEvaluations: Array of objects matching each question-answer pair. Each object must have:
   - question: String (the interviewer's question)
   - answer: String (the candidate's answer)
@@ -274,28 +276,49 @@ Return ONLY the raw JSON object. Do not include markdown block formatting.
   return callAi(prompt, () => {
     // Mock fallback evaluations
     const detailedEvaluations = [];
+    let gestureWarningsCount = 0;
     
     // Attempt to parse out Q&A pairs from transcript
     for (let i = 0; i < transcript.length; i++) {
+      const msg = transcript[i];
+      if (msg.role === 'user' && msg.content.includes('[SYSTEM:')) {
+        gestureWarningsCount++;
+      }
       if (transcript[i].role === 'assistant' && i + 1 < transcript.length && transcript[i + 1].role === 'user') {
+        const isSystemGesture = transcript[i + 1].content.includes('[SYSTEM:');
         detailedEvaluations.push({
           question: transcript[i].content,
-          answer: transcript[i + 1].content,
-          confidence: 80,
-          technicalAccuracy: 75,
-          communication: 80,
-          overall: 78,
-          feedback: 'Answer covers basics but lacks deep quantification metrics.'
+          answer: isSystemGesture ? '[Unprofessional Gesture Displayed]' : transcript[i + 1].content,
+          confidence: isSystemGesture ? 20 : 80,
+          technicalAccuracy: isSystemGesture ? 0 : 75,
+          communication: isSystemGesture ? 20 : 80,
+          overall: isSystemGesture ? 10 : 78,
+          feedback: isSystemGesture 
+            ? 'Candidate displayed unprofessional gestures (making funny faces or sticking tongue out) during the mock call.'
+            : 'Answer covers basics but lacks deep quantification metrics.'
         });
       }
     }
 
+    let confidenceScore = 80;
+    let technicalAccuracyScore = 70;
+    let communicationScore = 85;
+    let overallScore = 78;
+    let feedbackText = 'Good conversational presence. Answered technical questions with solid base concepts. Needs more numerical metrics.';
+
+    if (gestureWarningsCount > 0) {
+      confidenceScore = Math.max(10, confidenceScore - gestureWarningsCount * 25);
+      communicationScore = Math.max(10, communicationScore - gestureWarningsCount * 20);
+      overallScore = Math.max(10, Math.round((confidenceScore + technicalAccuracyScore + communicationScore) / 3));
+      feedbackText = `Unprofessional visual gestures (such as sticking tongue out, waving hands distractedly, or making funny faces) were detected ${gestureWarningsCount} time(s) during the session. While base technical concepts were outlined, the candidate must improve professional demeanor, looking directly at the camera without visual distractions to pass HR guidelines.`;
+    }
+
     return {
-      confidence: 80,
-      technicalAccuracy: 70,
-      communication: 85,
-      overall: 78,
-      feedback: 'Good conversational presence. Answered technical questions with solid base concepts. Needs more numerical metrics.',
+      confidence: confidenceScore,
+      technicalAccuracy: technicalAccuracyScore,
+      communication: communicationScore,
+      overall: overallScore,
+      feedback: feedbackText,
       detailedEvaluations
     };
   });

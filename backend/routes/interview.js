@@ -186,6 +186,10 @@ function isUncooperative(messageText, isIntroduction = false) {
   if (!messageText) return true;
   const textLower = messageText.trim().toLowerCase();
   
+  if (textLower.startsWith('[system:')) {
+    return true;
+  }
+  
   // 1. Explicit disinterest or refusal phrases
   const uncooperativePhrases = [
     'not interested', 'no interest', 'dont care', "don't care",
@@ -343,12 +347,22 @@ router.post('/chat', authMiddleware, async (req, res) => {
           }
         }
 
-        if (consecutiveCount === 1) {
-          aiResponse = `This is a professional interview assessment. Please provide a relevant technical response or description of your experience for the ${role} position.`;
-        } else if (consecutiveCount === 2) {
-          aiResponse = `I notice you are not engaging with the assessment questions. If you wish to continue the interview, please answer the questions professionally. Otherwise, we will have to terminate the session.`;
+        if (newMessage.startsWith('[SYSTEM:')) {
+          if (consecutiveCount === 1) {
+            aiResponse = `Please focus on the interview. Making funny gestures or unprofessional faces (like sticking your tongue out) is inappropriate during an interview. Let's maintain a professional posture.`;
+          } else if (consecutiveCount === 2) {
+            aiResponse = `I must request that you refrain from making unprofessional gestures. If you continue to behave unprofessionally, I will have to terminate this session immediately.`;
+          } else {
+            aiResponse = `Due to continued lack of cooperation and unprofessional gestures, this interview session has been terminated. Generating your final report now...`;
+          }
         } else {
-          aiResponse = `Due to continued lack of cooperation, this interview session has been terminated. You can view your final evaluation score (which will reflect the incomplete answers) by clicking 'End & Score'.`;
+          if (consecutiveCount === 1) {
+            aiResponse = `This is a professional interview assessment. Please provide a relevant technical response or description of your experience for the ${role} position.`;
+          } else if (consecutiveCount === 2) {
+            aiResponse = `I notice you are not engaging with the assessment questions. If you wish to continue the interview, please answer the questions professionally. Otherwise, we will have to terminate the session.`;
+          } else {
+            aiResponse = `Due to continued lack of cooperation, this interview session has been terminated. Generating your final report now...`;
+          }
         }
       }
     }
@@ -439,7 +453,8 @@ router.post('/chat', authMiddleware, async (req, res) => {
     }
 
     messages.push({ role: 'assistant', content: aiResponse });
-    res.json({ messages });
+    const isTerminated = aiResponse.toLowerCase().includes('terminated');
+    res.json({ messages, terminated: isTerminated });
 
   } catch (error) {
     console.error('Interview Error:', error);
