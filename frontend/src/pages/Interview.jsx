@@ -506,59 +506,6 @@ const Interview = () => {
                   <p style={{ fontSize: '0.85rem', margin: 0 }}>Webcam feed is inactive</p>
                 </div>
               )}
-
-              {/* Simulation triggers for unprofessional gestures */}
-              {(cameraOn || screenShare) && (
-                <div style={{
-                  position: 'absolute',
-                  top: '10px',
-                  right: '10px',
-                  display: 'flex',
-                  gap: '0.5rem',
-                  zIndex: 10
-                }}>
-                  <button
-                    onClick={() => triggerFunnyGesture('sticking tongue out')}
-                    className="btn btn-secondary"
-                    style={{
-                      background: 'rgba(15, 23, 42, 0.75)',
-                      border: 'none',
-                      color: '#ffffff',
-                      fontSize: '0.7rem',
-                      padding: '0.25rem 0.6rem',
-                      borderRadius: 'var(--radius-sm)',
-                      fontWeight: 700,
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.25rem',
-                      cursor: 'pointer'
-                    }}
-                    title="Simulate sticking tongue out / making funny faces"
-                  >
-                    <span>😜 Funny Face</span>
-                  </button>
-                  <button
-                    onClick={() => triggerFunnyGesture('waving hands')}
-                    className="btn btn-secondary"
-                    style={{
-                      background: 'rgba(15, 23, 42, 0.75)',
-                      border: 'none',
-                      color: '#ffffff',
-                      fontSize: '0.7rem',
-                      padding: '0.25rem 0.6rem',
-                      borderRadius: 'var(--radius-sm)',
-                      fontWeight: 700,
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.25rem',
-                      cursor: 'pointer'
-                    }}
-                    title="Simulate waving hands distractedly"
-                  >
-                    <span>👋 Wave Hand</span>
-                  </button>
-                </div>
-              )}
               
               <div style={{
                 position: 'absolute',
@@ -680,6 +627,38 @@ const Interview = () => {
               >
                 <Monitor size={18} />
               </button>
+
+              {(cameraOn || screenShare) && (
+                <>
+                  <button 
+                    onClick={() => triggerFunnyGesture('sticking tongue out')} 
+                    className="btn btn-secondary"
+                    style={{ 
+                      borderRadius: 'var(--radius-md)', 
+                      width: '44px', 
+                      height: '44px', 
+                      padding: 0 
+                    }}
+                    title="Simulate Funny Face (Test)"
+                  >
+                    <span style={{ fontSize: '1.1rem' }}>😜</span>
+                  </button>
+
+                  <button 
+                    onClick={() => triggerFunnyGesture('waving hands')} 
+                    className="btn btn-secondary"
+                    style={{ 
+                      borderRadius: 'var(--radius-md)', 
+                      width: '44px', 
+                      height: '44px', 
+                      padding: 0 
+                    }}
+                    title="Simulate Hand Wave (Test)"
+                  >
+                    <span style={{ fontSize: '1.1rem' }}>👋</span>
+                  </button>
+                </>
+              )}
 
               <button 
                 onClick={endInterview} 
