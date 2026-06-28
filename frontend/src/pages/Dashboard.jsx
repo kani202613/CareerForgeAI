@@ -46,8 +46,8 @@ const Dashboard = () => {
     <div className="flex-col gap-8">
       {/* Welcome Hero Banner */}
       <div className="glass-panel" style={{
-        background: 'var(--accent-tertiary)', /* Bauhaus Yellow background */
-        border: '3px solid #000000',
+        background: 'linear-gradient(135deg, rgba(2, 173, 200, 0.05) 0%, rgba(0, 119, 182, 0.05) 100%)',
+        border: '1px solid rgba(2, 173, 200, 0.15)',
         padding: '2.5rem',
         position: 'relative',
         overflow: 'hidden',
@@ -58,10 +58,9 @@ const Dashboard = () => {
             display: 'inline-flex',
             alignItems: 'center',
             gap: '0.5rem',
-            background: '#000000',
-            border: '2px solid #000000',
+            background: 'var(--accent-primary)',
             padding: '0.35rem 0.75rem',
-            borderRadius: '0px',
+            borderRadius: 'var(--radius-sm)',
             fontSize: '0.8rem',
             fontWeight: 800,
             color: '#ffffff',
@@ -72,10 +71,10 @@ const Dashboard = () => {
             <span>Placement Readiness Activated</span>
           </div>
 
-          <h2 style={{ fontSize: '2.25rem', fontWeight: 800, marginBottom: '0.75rem', fontFamily: 'var(--font-display)', color: '#000000' }}>
+          <h2 style={{ fontSize: '2.25rem', fontWeight: 800, marginBottom: '0.75rem', fontFamily: 'var(--font-display)', color: 'var(--text-primary)' }}>
             Forge Your Way to <span style={{ color: 'var(--accent-primary)', textDecoration: 'underline' }}>Success</span>, {user?.name || 'Student'}
           </h2>
-          <p style={{ maxWidth: '680px', fontSize: '0.95rem', lineHeight: 1.6, margin: 0, color: '#000000', fontWeight: 500 }}>
+          <p style={{ maxWidth: '680px', fontSize: '0.95rem', lineHeight: 1.6, margin: 0, color: 'var(--text-secondary)', fontWeight: 500 }}>
             Run strict ATS document audits and voice communication analytics to identify keyword gaps. Get immediate diagnostic results tailored to senior developer expectations.
           </p>
         </div>
@@ -105,8 +104,8 @@ const Dashboard = () => {
               <span style={{ fontSize: '1rem', color: 'var(--text-muted)' }}>/100</span>
             </div>
             {/* Progress line */}
-            <div style={{ width: '100%', height: '10px', background: '#ffffff', border: '2px solid #000000', borderRadius: '0px', marginTop: '0.75rem', overflow: 'hidden' }}>
-              <div style={{ width: `${data.atsScore || 0}%`, height: '100%', background: 'var(--accent-primary)', borderRadius: '0px' }} />
+            <div style={{ width: '100%', height: '10px', background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-xl)', marginTop: '0.75rem', overflow: 'hidden' }}>
+              <div style={{ width: `${data.atsScore || 0}%`, height: '100%', background: 'var(--accent-primary)', borderRadius: 'var(--radius-xl)' }} />
             </div>
           </div>
           <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: 0 }}>
@@ -128,8 +127,8 @@ const Dashboard = () => {
               <span style={{ fontSize: '1rem', color: 'var(--text-muted)' }}>/100</span>
             </div>
             {/* Progress line */}
-            <div style={{ width: '100%', height: '10px', background: '#ffffff', border: '2px solid #000000', borderRadius: '0px', marginTop: '0.75rem', overflow: 'hidden' }}>
-              <div style={{ width: `${data.interviewScore || 0}%`, height: '100%', background: 'var(--accent-secondary)', borderRadius: '0px' }} />
+            <div style={{ width: '100%', height: '10px', background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-xl)', marginTop: '0.75rem', overflow: 'hidden' }}>
+              <div style={{ width: `${data.interviewScore || 0}%`, height: '100%', background: 'var(--accent-secondary)', borderRadius: 'var(--radius-xl)' }} />
             </div>
           </div>
           <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: 0 }}>
@@ -150,8 +149,8 @@ const Dashboard = () => {
               </span>
             </div>
             {/* Progress line */}
-            <div style={{ width: '100%', height: '10px', background: '#ffffff', border: '2px solid #000000', borderRadius: '0px', marginTop: '0.75rem', overflow: 'hidden' }}>
-              <div style={{ width: `${data.placementReadiness || 0}%`, height: '100%', background: 'var(--accent-primary)', borderRadius: '0px' }} />
+            <div style={{ width: '100%', height: '10px', background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-xl)', marginTop: '0.75rem', overflow: 'hidden' }}>
+              <div style={{ width: `${data.placementReadiness || 0}%`, height: '100%', background: 'var(--accent-primary)', borderRadius: 'var(--radius-xl)' }} />
             </div>
           </div>
           <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: 0 }}>
@@ -169,7 +168,7 @@ const Dashboard = () => {
             <TrendingUp size={16} color="var(--accent-primary)" />
             <span>ATS Score History</span>
           </h3>
-          <div style={{ position: 'relative', height: '160px', background: '#ffffff', border: '2px solid #000000', borderRadius: '0px', boxShadow: 'var(--shadow-sm)', padding: '1rem 0.5rem 0.5rem 0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ position: 'relative', height: '160px', background: '#ffffff', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-md)', boxShadow: 'var(--shadow-sm)', padding: '1rem 0.5rem 0.5rem 0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             {data.resumeHistory && data.resumeHistory.length > 0 ? (
               (() => {
                 const width = 400;
@@ -186,16 +185,16 @@ const Dashboard = () => {
 
                 return (
                   <svg width="100%" height="100%" viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none">
-                    <line x1="10" y1="20" x2={width - 10} y2="20" stroke="#e6e6e2" strokeWidth="1" />
-                    <line x1="10" y1="50" x2={width - 10} y2="50" stroke="#e6e6e2" strokeWidth="1" />
-                    <line x1="10" y1="80" x2={width - 10} y2="80" stroke="#e6e6e2" strokeWidth="1" />
-                    <line x1="10" y1="110" x2={width - 10} y2="110" stroke="#e6e6e2" strokeWidth="1" />
+                    <line x1="10" y1="20" x2={width - 10} y2="20" stroke="#f1f5f9" strokeWidth="1" />
+                    <line x1="10" y1="50" x2={width - 10} y2="50" stroke="#f1f5f9" strokeWidth="1" />
+                    <line x1="10" y1="80" x2={width - 10} y2="80" stroke="#f1f5f9" strokeWidth="1" />
+                    <line x1="10" y1="110" x2={width - 10} y2="110" stroke="#f1f5f9" strokeWidth="1" />
 
-                    {points.length > 1 && <path d={pathD} fill="none" stroke="var(--accent-primary)" strokeWidth="3" strokeLinecap="square" />}
+                    {points.length > 1 && <path d={pathD} fill="none" stroke="var(--accent-primary)" strokeWidth="3" strokeLinecap="round" />}
 
                     {points.map((p, idx) => (
                       <g key={idx}>
-                        <rect x={p.x - 4} y={p.y - 4} width="8" height="8" fill="var(--accent-tertiary)" stroke="#000000" strokeWidth="2" />
+                        <rect x={p.x - 4} y={p.y - 4} width="8" height="8" fill="var(--accent-primary)" stroke="var(--bg-surface)" strokeWidth="1.5" rx="2" />
                         <text x={p.x} y={p.y - 10} fill="var(--text-primary)" fontSize="8" fontWeight="800" textAnchor="middle">
                           {p.score}%
                         </text>
@@ -216,7 +215,7 @@ const Dashboard = () => {
             <Award size={16} color="var(--accent-secondary)" />
             <span>Interview Performance Trend</span>
           </h3>
-          <div style={{ position: 'relative', height: '160px', background: '#ffffff', border: '2px solid #000000', borderRadius: '0px', boxShadow: 'var(--shadow-sm)', padding: '1rem 0.5rem 0.5rem 0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ position: 'relative', height: '160px', background: '#ffffff', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-md)', boxShadow: 'var(--shadow-sm)', padding: '1rem 0.5rem 0.5rem 0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             {data.interviewHistory && data.interviewHistory.length > 0 ? (
               (() => {
                 const width = 400;
@@ -226,10 +225,10 @@ const Dashboard = () => {
 
                 return (
                   <svg width="100%" height="100%" viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none">
-                    <line x1="10" y1="20" x2={width - 10} y2="20" stroke="#e6e6e2" strokeWidth="1" />
-                    <line x1="10" y1="50" x2={width - 10} y2="50" stroke="#e6e6e2" strokeWidth="1" />
-                    <line x1="10" y1="80" x2={width - 10} y2="80" stroke="#e6e6e2" strokeWidth="1" />
-                    <line x1="10" y1="110" x2={width - 10} y2="110" stroke="#e6e6e2" strokeWidth="1" />
+                    <line x1="10" y1="20" x2={width - 10} y2="20" stroke="#f1f5f9" strokeWidth="1" />
+                    <line x1="10" y1="50" x2={width - 10} y2="50" stroke="#f1f5f9" strokeWidth="1" />
+                    <line x1="10" y1="80" x2={width - 10} y2="80" stroke="#f1f5f9" strokeWidth="1" />
+                    <line x1="10" y1="110" x2={width - 10} y2="110" stroke="#f1f5f9" strokeWidth="1" />
 
                     {data.interviewHistory.map((item, idx) => {
                       const groupX = 20 + idx * colWidth + (colWidth - 30) / 2;
@@ -245,8 +244,7 @@ const Dashboard = () => {
                             width="8" 
                             height={barH_overall} 
                             fill="var(--accent-secondary)" 
-                            stroke="#000000"
-                            strokeWidth="1.5"
+                            rx="2"
                           />
                           <rect 
                             x={groupX + 10} 
@@ -254,8 +252,7 @@ const Dashboard = () => {
                             width="8" 
                             height={barH_tech} 
                             fill="var(--accent-tertiary)" 
-                            stroke="#000000"
-                            strokeWidth="1.5"
+                            rx="2"
                           />
                           <rect 
                             x={groupX + 20} 
@@ -263,8 +260,7 @@ const Dashboard = () => {
                             width="8" 
                             height={barH_comm} 
                             fill="var(--accent-primary)" 
-                            stroke="#000000"
-                            strokeWidth="1.5"
+                            rx="2"
                           />
                           <text x={groupX + 14} y={height - 5} fill="var(--text-muted)" fontSize="7" fontWeight="bold" textAnchor="middle">
                             Run {idx + 1}
@@ -296,7 +292,7 @@ const Dashboard = () => {
                 <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 700 }}>DETECTED SKILL GAPS:</span>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginBottom: '0.5rem' }}>
                   {data.missingSkills.slice(0, 5).map(sk => (
-                    <span key={sk} style={{ background: 'var(--accent-tertiary)', color: '#000000', border: '2px solid #000000', padding: '0.2rem 0.5rem', borderRadius: '0px', fontSize: '0.75rem', fontWeight: 700 }}>
+                    <span key={sk} style={{ background: 'rgba(2, 173, 200, 0.1)', color: 'var(--accent-primary)', padding: '0.2rem 0.6rem', borderRadius: 'var(--radius-sm)', fontSize: '0.75rem', fontWeight: 700 }}>
                       {sk}
                     </span>
                   ))}
@@ -330,7 +326,7 @@ const Dashboard = () => {
         <div className="flex-col gap-4">
           {/* Action 1: Resume Upload */}
           <div className="glass-panel glass-panel-hover flex-col gap-4" style={{ padding: '1.75rem' }}>
-            <div style={{ background: 'var(--accent-primary)', color: '#ffffff', width: '42px', height: '42px', border: '2px solid #000000', borderRadius: '0px', display: 'flex', alignItems: 'center', justifyCenter: 'center', justifyContent: 'center' }}>
+            <div style={{ background: 'rgba(2, 173, 200, 0.1)', color: 'var(--accent-primary)', width: '42px', height: '42px', borderRadius: 'var(--radius-md)', display: 'flex', alignItems: 'center', justifyCenter: 'center', justifyContent: 'center' }}>
               <FileText size={22} />
             </div>
             <div>
@@ -351,7 +347,7 @@ const Dashboard = () => {
 
           {/* Action 2: Mock Interview */}
           <div className="glass-panel glass-panel-hover flex-col gap-4" style={{ padding: '1.75rem' }}>
-            <div style={{ background: 'var(--accent-secondary)', color: '#ffffff', width: '42px', height: '42px', border: '2px solid #000000', borderRadius: '0px', display: 'flex', alignItems: 'center', justifyCenter: 'center', justifyContent: 'center' }}>
+            <div style={{ background: 'rgba(0, 119, 182, 0.1)', color: 'var(--accent-secondary)', width: '42px', height: '42px', borderRadius: 'var(--radius-md)', display: 'flex', alignItems: 'center', justifyCenter: 'center', justifyContent: 'center' }}>
               <MessageSquare size={22} />
             </div>
             <div>
@@ -381,12 +377,10 @@ const Dashboard = () => {
           <div className="timeline">
             {/* Step 1 */}
             <div className="timeline-item flex-col gap-1">
-              <span className={`timeline-dot ${(data.atsScore > 0) ? 'completed' : ''}`} style={{
-                background: (data.atsScore > 0) ? 'var(--accent-tertiary)' : undefined
-              }} />
+              <span className={`timeline-dot ${(data.atsScore > 0) ? 'completed' : ''}`} />
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <strong style={{ fontSize: '0.9rem', color: 'var(--text-primary)' }}>1. Submit Resume Diagnostic</strong>
-                {(data.atsScore > 0) && <CheckCircle size={14} color="var(--accent-tertiary)" />}
+                {(data.atsScore > 0) && <CheckCircle size={14} color="var(--accent-primary)" />}
               </div>
               <p style={{ fontSize: '0.775rem', color: 'var(--text-secondary)', margin: 0 }}>
                 Upload your resume PDF to register a score in our database.
@@ -395,12 +389,10 @@ const Dashboard = () => {
 
             {/* Step 2 */}
             <div className="timeline-item flex-col gap-1">
-              <span className={`timeline-dot ${(data.atsScore > 50) ? 'completed' : ''}`} style={{
-                background: (data.atsScore > 50) ? 'var(--accent-tertiary)' : undefined
-              }} />
+              <span className={`timeline-dot ${(data.atsScore > 50) ? 'completed' : ''}`} />
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <strong style={{ fontSize: '0.9rem', color: 'var(--text-primary)' }}>2. Clear Formatting Warnings</strong>
-                {(data.atsScore > 50) && <CheckCircle size={14} color="var(--accent-tertiary)" />}
+                {(data.atsScore > 50) && <CheckCircle size={14} color="var(--accent-primary)" />}
               </div>
               <p style={{ fontSize: '0.775rem', color: 'var(--text-secondary)', margin: 0 }}>
                 Clean up visual icons, seasonal dates, and achieve a strict score over 50%.
@@ -409,12 +401,10 @@ const Dashboard = () => {
 
             {/* Step 3 */}
             <div className="timeline-item flex-col gap-1">
-              <span className={`timeline-dot ${(data.interviewScore > 0) ? 'completed' : ''}`} style={{
-                background: (data.interviewScore > 0) ? 'var(--accent-tertiary)' : undefined
-              }} />
+              <span className={`timeline-dot ${(data.interviewScore > 0) ? 'completed' : ''}`} />
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <strong style={{ fontSize: '0.9rem', color: 'var(--text-primary)' }}>3. Run Interview Practice</strong>
-                {(data.interviewScore > 0) && <CheckCircle size={14} color="var(--accent-tertiary)" />}
+                {(data.interviewScore > 0) && <CheckCircle size={14} color="var(--accent-primary)" />}
               </div>
               <p style={{ fontSize: '0.775rem', color: 'var(--text-secondary)', margin: 0 }}>
                 Conduct a mock interview simulation to map verbal pacing.
@@ -423,12 +413,10 @@ const Dashboard = () => {
 
             {/* Step 4 */}
             <div className="timeline-item flex-col gap-1">
-              <span className={`timeline-dot ${(data.interviewScore >= 70) ? 'completed' : ''}`} style={{
-                background: (data.interviewScore >= 70) ? 'var(--accent-tertiary)' : undefined
-              }} />
+              <span className={`timeline-dot ${(data.interviewScore >= 70) ? 'completed' : ''}`} />
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <strong style={{ fontSize: '0.9rem', color: 'var(--text-primary)' }}>4. Achieve Gold Grade</strong>
-                {(data.interviewScore >= 70) && <CheckCircle size={14} color="var(--accent-tertiary)" />}
+                {(data.interviewScore >= 70) && <CheckCircle size={14} color="var(--accent-primary)" />}
               </div>
               <p style={{ fontSize: '0.775rem', color: 'var(--text-secondary)', margin: 0 }}>
                 Reduce verbal fillers and achieve a grade B or above.

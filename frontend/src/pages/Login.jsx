@@ -17,9 +17,9 @@ const Login = () => {
   };
 
   return (
-    <div className="split-container" style={{ border: '3px solid #000000' }}>
+    <div className="split-container" style={{ border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-lg)', overflow: 'hidden' }}>
       {/* Left Visual Branding Panel */}
-      <div className="split-visual" style={{ background: 'var(--bg-base)', borderRight: '3px solid #000000' }}>
+      <div className="split-visual" style={{ background: 'var(--bg-base)', borderRight: '1px solid var(--border-subtle)' }}>
         <div style={{ position: 'relative', zIndex: 2 }}>
           {/* Logo Badge */}
           <div style={{ 
@@ -27,10 +27,9 @@ const Login = () => {
             alignItems: 'center', 
             gap: '0.5rem',
             padding: '0.4rem 1rem',
-            borderRadius: '0px',
-            background: 'var(--accent-tertiary)',
-            border: '2px solid #000000',
-            color: '#000000',
+            borderRadius: 'var(--radius-sm)',
+            background: 'rgba(2, 173, 200, 0.1)',
+            color: 'var(--accent-primary)',
             fontSize: '0.85rem',
             fontWeight: 800,
             textTransform: 'uppercase',
@@ -51,9 +50,9 @@ const Login = () => {
 
           {/* Core Feature Highlights */}
           <div className="flex-col gap-4" style={{ marginBottom: '4rem' }}>
-            <div className="glass-panel" style={{ padding: '1.25rem', background: '#ffffff', maxWidth: '460px', border: '3px solid #000000', boxShadow: 'var(--shadow-sm)', borderRadius: '0px' }}>
+            <div className="glass-panel" style={{ padding: '1.25rem', background: 'var(--bg-surface)', maxWidth: '460px', border: '1px solid var(--border-subtle)', boxShadow: 'var(--shadow-sm)', borderRadius: 'var(--radius-md)' }}>
               <div className="flex items-center gap-3">
-                <div style={{ background: 'var(--accent-tertiary)', color: '#000000', padding: '0.5rem', border: '2px solid #000000', borderRadius: '0px' }}>
+                <div style={{ background: 'rgba(2, 173, 200, 0.1)', color: 'var(--accent-primary)', padding: '0.5rem', borderRadius: 'var(--radius-md)' }}>
                   <ShieldCheck size={20} />
                 </div>
                 <div>
@@ -63,9 +62,9 @@ const Login = () => {
               </div>
             </div>
 
-            <div className="glass-panel" style={{ padding: '1.25rem', background: '#ffffff', maxWidth: '460px', border: '3px solid #000000', boxShadow: 'var(--shadow-sm)', borderRadius: '0px' }}>
+            <div className="glass-panel" style={{ padding: '1.25rem', background: 'var(--bg-surface)', maxWidth: '460px', border: '1px solid var(--border-subtle)', boxShadow: 'var(--shadow-sm)', borderRadius: 'var(--radius-md)' }}>
               <div className="flex items-center gap-3">
-                <div style={{ background: 'var(--accent-secondary)', color: '#ffffff', padding: '0.5rem', border: '2px solid #000000', borderRadius: '0px' }}>
+                <div style={{ background: 'rgba(0, 119, 182, 0.1)', color: 'var(--accent-secondary)', padding: '0.5rem', borderRadius: 'var(--radius-md)' }}>
                   <CheckCircle2 size={20} />
                 </div>
                 <div>
@@ -77,24 +76,24 @@ const Login = () => {
           </div>
 
           {/* Small Footer Testimony */}
-          <p style={{ fontSize: '0.85rem', color: '#000000', fontWeight: 600, borderLeft: '3px solid #000000', paddingLeft: '1rem' }}>
+          <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600, borderLeft: '3px solid var(--accent-primary)', paddingLeft: '1rem' }}>
             "Strict scoring gave me a realistic diagnosis. My score was 52%, but after revisions, I secured an offer!"
           </p>
         </div>
 
-        {/* Bauhaus Geometric Background Decoration */}
+        {/* Floating Ambient Background Decoration */}
         <div style={{
           position: 'absolute', top: '10%', left: '-50px', width: '200px', height: '200px',
-          borderRadius: '50%', background: 'var(--accent-primary)', border: '4px solid #000000', opacity: 0.1, pointerEvents: 'none'
+          borderRadius: '50%', background: 'var(--accent-primary)', opacity: 0.05, pointerEvents: 'none'
         }} />
         <div style={{
           position: 'absolute', top: '65%', left: '70%', width: '150px', height: '150px',
-          background: 'var(--accent-tertiary)', border: '4px solid #000000', opacity: 0.1, pointerEvents: 'none'
+          borderRadius: '50%', background: 'var(--accent-secondary)', opacity: 0.05, pointerEvents: 'none'
         }} />
       </div>
 
       {/* Right Form Container */}
-      <div className="split-form-container" style={{ borderLeft: '3px solid #000000', borderRadius: '0px' }}>
+      <div className="split-form-container" style={{ borderLeft: '1px solid var(--border-subtle)' }}>
         <div className="w-full animate-fade-in" style={{ maxWidth: '360px', margin: '0 auto' }}>
           <div style={{ marginBottom: '2.5rem' }}>
             <h3 style={{ fontSize: '1.75rem', fontWeight: 800, marginBottom: '0.5rem', fontFamily: 'var(--font-display)', textTransform: 'uppercase' }}>Welcome back</h3>
@@ -104,10 +103,9 @@ const Login = () => {
           {error && (
             <div style={{ 
               background: 'var(--accent-primary)', 
-              border: '2px solid #000000', 
               color: '#ffffff', 
               padding: '0.75rem 1rem', 
-              borderRadius: '0px', 
+              borderRadius: 'var(--radius-md)', 
               fontWeight: 700,
               fontSize: '0.85rem',
               marginBottom: '1.5rem',

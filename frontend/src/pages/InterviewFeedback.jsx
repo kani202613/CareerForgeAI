@@ -101,9 +101,9 @@ const InterviewFeedback = () => {
                 <path 
                   d="M20 110 A80 80 0 0 1 180 110" 
                   fill="none" 
-                  stroke="#e6e6e2" 
+                  stroke="#f1f5f9" 
                   strokeWidth="12" 
-                  strokeLinecap="square" 
+                  strokeLinecap="round" 
                 />
                 {/* Colored arc representing score */}
                 <path 
@@ -111,7 +111,7 @@ const InterviewFeedback = () => {
                   fill="none" 
                   stroke="var(--accent-primary)" 
                   strokeWidth="12" 
-                  strokeLinecap="square" 
+                  strokeLinecap="round" 
                   strokeDasharray="251" 
                   strokeDashoffset={251 - (251 * score) / 100}
                   style={{ transition: 'stroke-dashoffset 1.5s ease-out' }}
@@ -139,10 +139,9 @@ const InterviewFeedback = () => {
               alignItems: 'center',
               gap: '0.5rem',
               padding: '0.4rem 1.2rem',
-              borderRadius: '0px',
-              background: 'var(--accent-tertiary)',
-              border: '2px solid #000000',
-              color: '#000000',
+              borderRadius: 'var(--radius-sm)',
+              background: 'rgba(2, 173, 200, 0.1)',
+              color: 'var(--accent-primary)',
               fontWeight: 800,
               fontSize: '0.85rem',
               letterSpacing: '0.05em',
@@ -165,8 +164,8 @@ const InterviewFeedback = () => {
                   <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 700 }}>TECHNICAL ACCURACY</span>
                   <span style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--accent-secondary)' }}>{technicalAccuracy || 0}%</span>
                 </div>
-                <div style={{ width: '100%', height: '8px', background: '#ffffff', border: '1px solid #000000', borderRadius: '0px', overflow: 'hidden' }}>
-                  <div style={{ width: `${technicalAccuracy || 0}%`, height: '100%', background: 'var(--accent-secondary)', borderRadius: '0px' }} />
+                <div style={{ width: '100%', height: '8px', background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-xl)', overflow: 'hidden' }}>
+                  <div style={{ width: `${technicalAccuracy || 0}%`, height: '100%', background: 'var(--accent-secondary)', borderRadius: 'var(--radius-xl)' }} />
                 </div>
               </div>
 
@@ -176,8 +175,8 @@ const InterviewFeedback = () => {
                   <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 700 }}>COMMUNICATION DEPTH</span>
                   <span style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--accent-primary)' }}>{communication || 0}%</span>
                 </div>
-                <div style={{ width: '100%', height: '8px', background: '#ffffff', border: '1px solid #000000', borderRadius: '0px', overflow: 'hidden' }}>
-                  <div style={{ width: `${communication || 0}%`, height: '100%', background: 'var(--accent-primary)', borderRadius: '0px' }} />
+                <div style={{ width: '100%', height: '8px', background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-xl)', overflow: 'hidden' }}>
+                  <div style={{ width: `${communication || 0}%`, height: '100%', background: 'var(--accent-primary)', borderRadius: 'var(--radius-xl)' }} />
                 </div>
               </div>
 
@@ -187,8 +186,8 @@ const InterviewFeedback = () => {
                   <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 700 }}>CONFIDENCE & PACING</span>
                   <span style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--accent-tertiary)' }}>{confidence || 0}%</span>
                 </div>
-                <div style={{ width: '100%', height: '8px', background: '#ffffff', border: '1px solid #000000', borderRadius: '0px', overflow: 'hidden' }}>
-                  <div style={{ width: `${confidence || 0}%`, height: '100%', background: 'var(--accent-tertiary)', borderRadius: '0px' }} />
+                <div style={{ width: '100%', height: '8px', background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-xl)', overflow: 'hidden' }}>
+                  <div style={{ width: `${confidence || 0}%`, height: '100%', background: 'var(--accent-tertiary)', borderRadius: 'var(--radius-xl)' }} />
                 </div>
               </div>
             </div>
@@ -204,7 +203,7 @@ const InterviewFeedback = () => {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
               
               {/* Clarity Box */}
-              <div style={{ background: '#ffffff', border: '2px solid #000000', padding: '1rem', borderRadius: '0px', boxShadow: 'var(--shadow-sm)' }}>
+              <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', padding: '1rem', borderRadius: 'var(--radius-md)', boxShadow: 'var(--shadow-sm)' }}>
                 <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 700 }}>CLARITY INDEX</span>
                 <div style={{ fontSize: '1.75rem', fontWeight: 800, color: clarityGrade === 'A' ? '#10b981' : '#f59e0b', marginTop: '0.25rem' }}>
                   {clarityGrade || 'B'}
@@ -215,7 +214,7 @@ const InterviewFeedback = () => {
               </div>
 
               {/* Fillers Box */}
-              <div style={{ background: '#ffffff', border: '2px solid #000000', padding: '1rem', borderRadius: '0px', boxShadow: 'var(--shadow-sm)' }}>
+              <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', padding: '1rem', borderRadius: 'var(--radius-md)', boxShadow: 'var(--shadow-sm)' }}>
                 <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 700 }}>FILLER WORDS</span>
                 <div style={{ fontSize: '1.75rem', fontWeight: 800, color: (fillerWordsCount || 0) > 6 ? '#ef4444' : '#10b981', marginTop: '0.25rem' }}>
                   {fillerWordsCount || 0}
@@ -228,17 +227,17 @@ const InterviewFeedback = () => {
             </div>
 
             {/* Answer Depth Bar */}
-            <div style={{ background: '#ffffff', border: '2px solid #000000', padding: '1rem', borderRadius: '0px', boxShadow: 'var(--shadow-sm)' }}>
+            <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', padding: '1rem', borderRadius: 'var(--radius-md)', boxShadow: 'var(--shadow-sm)' }}>
               <div className="flex justify-between items-center" style={{ marginBottom: '0.5rem' }}>
                 <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 700 }}>AVERAGE ANSWER DEPTH</span>
                 <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--text-primary)' }}>{averageWordCount || 0} words</span>
               </div>
-              <div style={{ width: '100%', height: '8px', background: '#ffffff', border: '1px solid #000000', borderRadius: '0px', overflow: 'hidden' }}>
+              <div style={{ width: '100%', height: '8px', background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-xl)', overflow: 'hidden' }}>
                 <div style={{ 
                   width: `${Math.min((averageWordCount || 0) * 1.5, 100)}%`, 
                   height: '100%', 
-                  background: (averageWordCount || 0) < 35 ? '#ef4444' : 'var(--accent-tertiary)',
-                  borderRadius: '0px'
+                  background: (averageWordCount || 0) < 35 ? '#ef4444' : 'var(--accent-primary)',
+                  borderRadius: 'var(--radius-xl)'
                 }} />
               </div>
               <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.7rem', color: 'var(--text-muted)', lineHeight: '1.3', fontWeight: 500 }}>
@@ -275,10 +274,10 @@ const InterviewFeedback = () => {
                   display: 'flex',
                   alignItems: 'flex-start',
                   gap: '0.75rem',
-                  background: '#ffffff',
-                  border: '2px solid #000000',
+                  background: 'var(--bg-surface)',
+                  border: '1px solid var(--border-subtle)',
                   padding: '0.75rem 1rem',
-                  borderRadius: '0px',
+                  borderRadius: 'var(--radius-md)',
                   boxShadow: 'var(--shadow-sm)'
                 }}>
                   <span style={{
@@ -287,8 +286,7 @@ const InterviewFeedback = () => {
                     justifyContent: 'center',
                     minWidth: '22px',
                     height: '22px',
-                    borderRadius: '0px',
-                    border: '1.5px solid #000000',
+                    borderRadius: '50%',
                     background: 'var(--accent-primary)',
                     color: 'white',
                     fontSize: '0.75rem',
@@ -349,23 +347,24 @@ const InterviewFeedback = () => {
                 style={{
                   alignSelf: isAssistant ? 'flex-start' : 'flex-end',
                   maxWidth: '85%',
-                  background: isAssistant ? '#ffffff' : 'var(--accent-secondary)',
-                  color: isAssistant ? '#000000' : '#ffffff',
-                  border: '2px solid #000000',
-                  borderRadius: '0px',
-                  padding: '1rem',
-                  boxShadow: '3px 3px 0px 0px #000000'
+                  background: isAssistant ? 'var(--bg-surface)' : 'var(--accent-primary)',
+                  color: isAssistant ? 'var(--text-primary)' : '#ffffff',
+                  border: '1px solid var(--border-subtle)',
+                  borderRadius: 'var(--radius-md)',
+                  padding: '0.85rem 1.2rem',
+                  boxShadow: 'var(--shadow-sm)'
                 }}
               >
                 <strong style={{
                   display: 'block',
                   marginBottom: '0.25rem',
                   fontSize: '0.75rem',
-                  color: isAssistant ? 'var(--accent-primary)' : 'var(--accent-tertiary)'
+                  color: isAssistant ? 'var(--accent-primary)' : '#ffffff',
+                  opacity: isAssistant ? 1 : 0.8
                 }}>
                   {isAssistant ? '🎤 INTERVIEWER' : '💬 YOU'}
                 </strong>
-                <p style={{ margin: 0, fontSize: '0.85rem', lineHeight: 1.5, color: isAssistant ? '#000000' : '#ffffff', fontWeight: 600 }}>
+                <p style={{ margin: 0, fontSize: '0.85rem', lineHeight: 1.5, color: isAssistant ? 'var(--text-primary)' : '#ffffff', fontWeight: 500 }}>
                   {msg.content}
                 </p>
               </div>
@@ -384,15 +383,15 @@ const InterviewFeedback = () => {
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             {detailedEvaluations.map((item, idx) => (
-              <div key={idx} style={{ background: '#ffffff', border: '3px solid #000000', padding: '1.25rem', borderRadius: '0px', boxShadow: 'var(--shadow-sm)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem', borderBottom: '2px solid #000000', paddingBottom: '0.5rem' }}>
+              <div key={idx} style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', padding: '1.25rem', borderRadius: 'var(--radius-md)', boxShadow: 'var(--shadow-sm)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '0.5rem' }}>
                   <strong style={{ fontSize: '0.85rem', color: 'var(--accent-primary)', textTransform: 'uppercase' }}>Q{idx + 1}: Technical assessment</strong>
-                  <span style={{ fontSize: '0.8rem', fontWeight: 800, border: '2px solid #000000', background: 'var(--accent-tertiary)', color: '#000000', padding: '0.2rem 0.65rem', borderRadius: '0px' }}>
+                  <span style={{ fontSize: '0.8rem', fontWeight: 800, background: 'rgba(2, 173, 200, 0.1)', color: 'var(--accent-primary)', padding: '0.2rem 0.65rem', borderRadius: 'var(--radius-sm)' }}>
                     Score: {item.overall || 0}%
                   </span>
                 </div>
                 <p style={{ margin: '0 0 0.75rem 0', fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-primary)' }}>"{item.question}"</p>
-                <div style={{ background: 'var(--bg-base)', padding: '0.75rem 1rem', border: '1.5px solid #000000', borderRadius: '0px', marginBottom: '0.75rem', fontSize: '0.825rem', color: '#000000', fontStyle: 'italic', fontWeight: 500 }}>
+                <div style={{ background: 'var(--bg-base)', padding: '0.75rem 1rem', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-md)', marginBottom: '0.75rem', fontSize: '0.825rem', color: 'var(--text-primary)', fontStyle: 'italic', fontWeight: 500 }}>
                   "{item.answer}"
                 </div>
 
@@ -411,7 +410,7 @@ const InterviewFeedback = () => {
                   </div>
                 </div>
 
-                <div style={{ marginTop: '0.75rem', padding: '0.75rem', background: 'var(--bg-base)', borderRadius: '0px', fontSize: '0.8rem', color: '#000000', border: '2px solid #000000', borderLeft: '6px solid var(--accent-primary)', fontWeight: 500 }}>
+                <div style={{ marginTop: '0.75rem', padding: '0.75rem', background: 'var(--bg-base)', borderRadius: 'var(--radius-md)', fontSize: '0.8rem', color: 'var(--text-primary)', border: '1px solid var(--border-subtle)', borderLeft: '6px solid var(--accent-primary)', fontWeight: 500 }}>
                   <strong>AI Feedback: </strong> {item.feedback}
                 </div>
               </div>

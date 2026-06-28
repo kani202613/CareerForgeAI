@@ -412,7 +412,7 @@ const Interview = () => {
           <div className="glass-panel flex-col" style={{ 
             justifyContent: 'space-between', 
             background: 'var(--bg-surface)',
-            border: '3px solid #000000',
+            border: '1px solid var(--border-subtle)',
             boxShadow: 'var(--shadow-md)',
             minHeight: '480px',
             padding: '1.5rem',
@@ -426,10 +426,9 @@ const Interview = () => {
                 alignItems: 'center',
                 gap: '0.4rem',
                 background: 'var(--accent-primary)',
-                border: '2px solid #000000',
                 color: '#ffffff',
                 padding: '0.3rem 0.75rem',
-                borderRadius: '0px',
+                borderRadius: 'var(--radius-sm)',
                 fontSize: '0.75rem',
                 fontWeight: 800,
                 boxShadow: 'var(--shadow-sm)'
@@ -439,7 +438,7 @@ const Interview = () => {
                   width: '6px', 
                   height: '6px', 
                   background: '#ffffff', 
-                  borderRadius: '0px',
+                  borderRadius: '50%',
                   animation: 'pulse 1s infinite alternate'
                 }} />
                 <span>REC LIVE</span>
@@ -453,11 +452,11 @@ const Interview = () => {
             <div style={{
               width: '100%',
               height: '240px',
-              background: '#e6e6e2',
-              borderRadius: '0px',
+              background: 'var(--bg-elevated)',
+              borderRadius: 'var(--radius-md)',
               overflow: 'hidden',
               position: 'relative',
-              border: '3px solid #000000',
+              border: '1px solid var(--border-subtle)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -488,13 +487,12 @@ const Interview = () => {
                 position: 'absolute',
                 bottom: '10px',
                 left: '10px',
-                background: '#000000',
+                background: 'rgba(15, 23, 42, 0.75)',
                 padding: '0.25rem 0.6rem',
-                borderRadius: '0px',
+                borderRadius: 'var(--radius-sm)',
                 fontSize: '0.75rem',
                 color: '#ffffff',
-                fontWeight: 700,
-                border: '2px solid #000000'
+                fontWeight: 700
               }}>
                 {screenShare ? 'Screen Share Stream' : 'Your Front Camera'}
               </div>
@@ -502,10 +500,10 @@ const Interview = () => {
 
             {/* Human HR Interviewer Face Card */}
             <div className="flex items-center gap-4" style={{ 
-              background: '#ffffff', 
-              border: '3px solid #000000',
+              background: 'var(--bg-surface)', 
+              border: '1px solid var(--border-subtle)',
               padding: '1rem',
-              borderRadius: '0px',
+              borderRadius: 'var(--radius-md)',
               width: '100%',
               marginBottom: '1.5rem',
               boxShadow: 'var(--shadow-sm)'
@@ -514,9 +512,8 @@ const Interview = () => {
               <div style={{
                 width: '60px',
                 height: '60px',
-                borderRadius: '0px',
-                border: loading ? '3px solid var(--accent-primary)' : '3px solid #000000',
-                boxShadow: loading ? '3px 3px 0px 0px #000000' : 'none',
+                borderRadius: '50%',
+                border: loading ? '2px solid var(--accent-primary)' : '1px solid var(--border-subtle)',
                 transition: 'all 0.3s ease',
                 overflow: 'hidden',
                 display: 'flex',
@@ -558,7 +555,7 @@ const Interview = () => {
                 onClick={toggleMute} 
                 className="btn btn-secondary"
                 style={{ 
-                  borderRadius: '0px', 
+                  borderRadius: 'var(--radius-md)', 
                   width: '44px', 
                   height: '44px', 
                   padding: 0,
@@ -576,7 +573,7 @@ const Interview = () => {
                 className="btn btn-secondary"
                 disabled={screenShare}
                 style={{ 
-                  borderRadius: '0px', 
+                  borderRadius: 'var(--radius-md)', 
                   width: '44px', 
                   height: '44px', 
                   padding: 0,
@@ -594,13 +591,13 @@ const Interview = () => {
                 onClick={toggleScreenShare} 
                 className="btn btn-secondary"
                 style={{ 
-                  borderRadius: '0px', 
+                  borderRadius: 'var(--radius-md)', 
                   width: '44px', 
                   height: '44px', 
                   padding: 0,
                   background: screenShare ? 'rgba(16, 185, 129, 0.15)' : undefined,
-                  borderColor: screenShare ? 'var(--accent-tertiary)' : undefined,
-                  color: screenShare ? 'var(--accent-tertiary)' : undefined
+                  borderColor: screenShare ? 'var(--accent-primary)' : undefined,
+                  color: screenShare ? 'var(--accent-primary)' : undefined
                 }}
                 title={screenShare ? 'Stop Sharing' : 'Share Desktop'}
               >
@@ -610,7 +607,7 @@ const Interview = () => {
               <button 
                 onClick={endInterview} 
                 className="btn btn-danger"
-                style={{ borderRadius: '0px', padding: '0.5rem 1.25rem' }}
+                style={{ borderRadius: 'var(--radius-md)', padding: '0.5rem 1.25rem' }}
               >
                 <PhoneOff size={16} />
                 <span>End & Score</span>
@@ -644,23 +641,24 @@ const Interview = () => {
                     style={{ 
                       alignSelf: isAssistant ? 'flex-start' : 'flex-end',
                       maxWidth: '85%',
-                      background: isAssistant ? '#ffffff' : 'var(--accent-secondary)',
-                      color: isAssistant ? '#000000' : '#ffffff',
-                      border: '2px solid #000000',
-                      borderRadius: '0px',
-                      padding: '1rem',
-                      boxShadow: '3px 3px 0px 0px #000000'
+                      background: isAssistant ? 'var(--bg-surface)' : 'var(--accent-primary)',
+                      color: isAssistant ? 'var(--text-primary)' : '#ffffff',
+                      border: '1px solid var(--border-subtle)',
+                      borderRadius: 'var(--radius-md)',
+                      padding: '0.85rem 1.2rem',
+                      boxShadow: 'var(--shadow-sm)'
                     }}
                   >
                     <strong style={{ 
                       display: 'block', 
                       marginBottom: '0.25rem', 
                       fontSize: '0.75rem', 
-                      color: isAssistant ? 'var(--accent-primary)' : 'var(--accent-tertiary)' 
+                      color: isAssistant ? 'var(--accent-primary)' : '#ffffff',
+                      opacity: isAssistant ? 1 : 0.8
                     }}>
                       {isAssistant ? '🎤 INTERVIEWER' : '💬 YOU'}
                     </strong>
-                    <p style={{ margin: 0, fontSize: '0.85rem', lineHeight: '1.5', color: isAssistant ? '#000000' : '#ffffff', fontWeight: 600 }}>
+                    <p style={{ margin: 0, fontSize: '0.85rem', lineHeight: '1.5', color: isAssistant ? 'var(--text-primary)' : '#ffffff', fontWeight: 500 }}>
                       {msg.content}
                     </p>
                   </div>
