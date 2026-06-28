@@ -265,6 +265,24 @@ const Interview = () => {
     }
   }, [history]);
 
+  // Listen for keyboard shortcuts to simulate unprofessional visual gestures (when not typing in fields)
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') {
+        return;
+      }
+      if (e.key === 'F' || e.key === 'f') {
+        triggerFunnyGesture('sticking tongue out');
+      } else if (e.key === 'W' || e.key === 'w') {
+        triggerFunnyGesture('waving hands');
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [history]);
+
   const handleSend = async (isFirst = false, customMessage = null) => {
     const messageToSend = customMessage !== null ? customMessage : (isFirst ? null : input);
     if (!isFirst && (!messageToSend || !messageToSend.trim())) return;
@@ -627,38 +645,6 @@ const Interview = () => {
               >
                 <Monitor size={18} />
               </button>
-
-              {(cameraOn || screenShare) && (
-                <>
-                  <button 
-                    onClick={() => triggerFunnyGesture('sticking tongue out')} 
-                    className="btn btn-secondary"
-                    style={{ 
-                      borderRadius: 'var(--radius-md)', 
-                      width: '44px', 
-                      height: '44px', 
-                      padding: 0 
-                    }}
-                    title="Simulate Funny Face (Test)"
-                  >
-                    <span style={{ fontSize: '1.1rem' }}>😜</span>
-                  </button>
-
-                  <button 
-                    onClick={() => triggerFunnyGesture('waving hands')} 
-                    className="btn btn-secondary"
-                    style={{ 
-                      borderRadius: 'var(--radius-md)', 
-                      width: '44px', 
-                      height: '44px', 
-                      padding: 0 
-                    }}
-                    title="Simulate Hand Wave (Test)"
-                  >
-                    <span style={{ fontSize: '1.1rem' }}>👋</span>
-                  </button>
-                </>
-              )}
 
               <button 
                 onClick={endInterview} 
